@@ -19,7 +19,10 @@
         <service
             android:name=".ServerSocketService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+        <service
+            android:name=".ClientSocketService"
+            android:exported="false"></service>
     </application>
 
 </manifest>
