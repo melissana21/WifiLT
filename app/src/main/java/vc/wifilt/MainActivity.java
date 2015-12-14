@@ -1,7 +1,11 @@
 package vc.wifilt;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -28,6 +32,11 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
     private SwitchCompat mServiceSwitch;
+    private final IntentFilter mIntentFilter = new IntentFilter();
+    WifiP2pManager mManager;
+    WifiP2pManager.Channel mChannel;
+    WifiDirectBroadcastReceiver mWifiDirectBroadcastReceiver;
+    public static final String TAG="MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +56,27 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
         mTabLayout = (TabLayout) findViewById(R.id.tabs);
         mTabLayout.setupWithViewPager(mViewPager);
+
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+        mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        mChannel = mManager.initialize(this, getMainLooper(), null);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mWifiDirectBroadcastReceiver = new WifiDirectBroadcastReceiver();
+        registerReceiver(mWifiDirectBroadcastReceiver, mIntentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mWifiDirectBroadcastReceiver);
     }
 
     @Override
@@ -107,6 +137,27 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         @Override
         public CharSequence getPageTitle(int position) {
             return mFragmentTitleList.get(position);
+        }
+    }
+
+    private class WifiDirectBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
+                int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
+                if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
+
+                } else {
+
+                }
+            } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
+
+            } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
+
+            } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+
+            }
         }
     }
 }
