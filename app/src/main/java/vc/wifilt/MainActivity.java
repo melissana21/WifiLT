@@ -87,6 +87,12 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         Context context = getSupportActionBar().getThemedContext();
         getMenuInflater().inflate(R.menu.main, menu);
@@ -113,17 +119,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     });
                 } else {
                     switchItem.setTitle(R.string.start_service_title);
-                    mManager.stopPeerDiscovery(mChannel, new WifiP2pManager.ActionListener() {
-                        @Override
-                        public void onSuccess() {
-                            Toast.makeText(MainActivity.this, "Service stop", Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onFailure(int reason) {
-
-                        }
-                    });
+                    stopService();
                 }
             }
         });
@@ -156,6 +152,30 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    private void stopService() {
+        mManager.stopPeerDiscovery(mChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(MainActivity.this, "Service stop", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(int reason) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int reason) {
+
+            }
+        });
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
