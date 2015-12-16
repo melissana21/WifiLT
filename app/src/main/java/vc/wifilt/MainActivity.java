@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.CompoundButton;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     private ViewPager mViewPager;
     private SwitchCompat mServiceSwitch;
     private final IntentFilter mIntentFilter = new IntentFilter();
+    private List mPeers = new ArrayList();
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
     WifiDirectBroadcastReceiver mWifiDirectBroadcastReceiver;
@@ -92,6 +95,18 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 if (isChecked) {
                     switchItem.setTitle(R.string.stop_service_title);
                     Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
+
+                    mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(MainActivity.this, "Discovery initiation is successful", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onFailure(int reason) {
+                            Toast.makeText(MainActivity.this, "Discovery initiation fails", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } else {
                     switchItem.setTitle(R.string.start_service_title);
                     Toast.makeText(MainActivity.this, "Service stop", Toast.LENGTH_SHORT).show();
@@ -140,6 +155,15 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         }
     }
 
+    private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
+        @Override
+        public void onPeersAvailable(WifiP2pDeviceList peers) {
+            mPeers.clear();
+            mPeers.addAll(peers.getDeviceList());
+            Log.v(TAG, mPeers.toString());
+        }
+    };
+
     private class WifiDirectBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -152,7 +176,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
                 }
             } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-
+                if (mManager != null) {
+                    mManager.requestPeers(mChannel, peerListListener);
+                }
+                Toast.makeText(MainActivity.this, "P2P peers changed", Toast.LENGTH_SHORT).show();
             } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
