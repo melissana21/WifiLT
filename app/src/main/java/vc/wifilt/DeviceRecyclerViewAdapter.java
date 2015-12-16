@@ -1,5 +1,6 @@
 package vc.wifilt;
 
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,10 +19,10 @@ import vc.wifilt.dummy.DummyContent.DummyItem;
  */
 public class DeviceRecyclerViewAdapter extends RecyclerView.Adapter<DeviceRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private final List<WifiP2pDevice> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public DeviceRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public DeviceRecyclerViewAdapter(List<WifiP2pDevice> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -36,8 +37,28 @@ public class DeviceRecyclerViewAdapter extends RecyclerView.Adapter<DeviceRecycl
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mNameView.setText(mValues.get(position).name);
-        holder.mStatusView.setText(mValues.get(position).status);
+        holder.mNameView.setText(mValues.get(position).deviceName);
+        String status;
+        switch (mValues.get(position).status) {
+            case 3:
+                status = "Available";
+                break;
+            case 0:
+                status = "Connected";
+                break;
+            case 2:
+                status = "Failed";
+                break;
+            case 1:
+                status = "Invited";
+                break;
+            case 4:
+                status = "Unavailable";
+                break;
+            default:
+                status = "Unknown";
+        }
+        holder.mStatusView.setText(status);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,7 +81,7 @@ public class DeviceRecyclerViewAdapter extends RecyclerView.Adapter<DeviceRecycl
         public final View mView;
         public final TextView mNameView;
         public final TextView mStatusView;
-        public DummyItem mItem;
+        public WifiP2pDevice mItem;
 
         public ViewHolder(View view) {
             super(view);

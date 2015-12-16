@@ -1,6 +1,7 @@
 package vc.wifilt;
 
 import android.content.Context;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -9,11 +10,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import vc.wifilt.dummy.DummyContent;
-import vc.wifilt.dummy.DummyContent.DummyItem;
-
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -28,6 +24,7 @@ public class DeviceFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    protected static DeviceRecyclerViewAdapter sDeviceRecyclerViewAdapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -69,7 +66,7 @@ public class DeviceFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new DeviceRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(sDeviceRecyclerViewAdapter = new DeviceRecyclerViewAdapter(MainActivity.sPeers, mListener));
         }
         return view;
     }
@@ -104,6 +101,6 @@ public class DeviceFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(WifiP2pDevice item);
     }
 }

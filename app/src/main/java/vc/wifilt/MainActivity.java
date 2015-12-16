@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -14,7 +16,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -26,8 +27,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import vc.wifilt.dummy.DummyContent;
-
 public class MainActivity extends AppCompatActivity implements DeviceFragment.OnListFragmentInteractionListener, LogFragment.OnFragmentInteractionListener {
 
     private Toolbar mToolbar;
@@ -35,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     private ViewPager mViewPager;
     private SwitchCompat mServiceSwitch;
     private final IntentFilter mIntentFilter = new IntentFilter();
-    private List mPeers = new ArrayList();
+    protected static List<WifiP2pDevice> sPeers = new ArrayList<>();
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
     WifiDirectBroadcastReceiver mWifiDirectBroadcastReceiver;
@@ -117,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(WifiP2pDevice item) {
         Toast.makeText(MainActivity.this, item.toString(), Toast.LENGTH_SHORT).show();
     }
 
@@ -158,9 +157,11 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peers) {
-            mPeers.clear();
-            mPeers.addAll(peers.getDeviceList());
-            Log.v(TAG, mPeers.toString());
+            sPeers.clear();
+            sPeers.addAll(peers.getDeviceList());
+            Log.v(TAG, sPeers.toString());
+
+            DeviceFragment.sDeviceRecyclerViewAdapter.notifyDataSetChanged();
         }
     };
 
