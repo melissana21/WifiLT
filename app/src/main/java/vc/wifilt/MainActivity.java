@@ -4,9 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -108,7 +112,17 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     });
                 } else {
                     switchItem.setTitle(R.string.start_service_title);
-                    Toast.makeText(MainActivity.this, "Service stop", Toast.LENGTH_SHORT).show();
+                    mManager.stopPeerDiscovery(mChannel, new WifiP2pManager.ActionListener() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(MainActivity.this, "Service stop", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onFailure(int reason) {
+
+                        }
+                    });
                 }
             }
         });
@@ -118,6 +132,24 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     @Override
     public void onListFragmentInteraction(WifiP2pDevice item) {
         Toast.makeText(MainActivity.this, item.toString(), Toast.LENGTH_SHORT).show();
+
+        if (item.status == WifiP2pDevice.AVAILABLE) {
+            WifiP2pConfig config = new WifiP2pConfig();
+            config.deviceAddress = item.deviceAddress;
+            config.wps.setup = WpsInfo.PBC;
+
+            mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    Toast.makeText(MainActivity.this, "Connect failed", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     @Override
@@ -182,7 +214,25 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 }
                 Toast.makeText(MainActivity.this, "P2P peers changed", Toast.LENGTH_SHORT).show();
             } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
+                if (mManager == null) {
+                    return;
+                }
 
+                NetworkInfo networkInfo = (NetworkInfo) intent
+                        .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+
+                if (networkInfo.isConnected()) {
+                    mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
+                        @Override
+                        public void onConnectionInfoAvailable(WifiP2pInfo info) {
+                            if (info.groupFormed && info.isGroupOwner) {
+                                Toast.makeText(MainActivity.this, "This is group owner", Toast.LENGTH_SHORT).show();
+                            } else if (info.groupFormed) {
+                                Toast.makeText(MainActivity.this, "This is client", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 
             }
