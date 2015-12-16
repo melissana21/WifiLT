@@ -2,13 +2,13 @@ package vc.wifilt;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.Socket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 /**
  * Establishes a socket to connect to and transfer data with a ServerSocket.
@@ -31,14 +31,21 @@ public class ClientSocketService extends IntentService {
             int port = intent.getIntExtra("EXTRA_PORT", 31067);
             Serializable data = intent.getSerializableExtra("EXTRA_DATA");
             try {
-                Socket socket = new Socket(ip, port);
+//                Socket socket = new Socket(ip, port);
+                byte[] message = data.toString().getBytes();
+                DatagramPacket packet = new DatagramPacket(message, message.length);
+                packet.setAddress(InetAddress.getByName(ip));
+                packet.setPort(port);
+                DatagramSocket socket = ServerSocketService.mServerSocket;
+                socket.setBroadcast(true);
+                socket.send(packet);
 
                 Log.d(TAG, "ClientSocket start");
-                ObjectOutputStream objectOutputStream =
-                        new ObjectOutputStream(socket.getOutputStream());
-                objectOutputStream.writeObject(data);
+//                ObjectOutputStream objectOutputStream =
+//                        new ObjectOutputStream(socket.getOutputStream());
+//                objectOutputStream.writeObject(data);
                 Log.d(TAG, "Socket sent: " + data.toString());
-                socket.close();
+//                socket.close();
                 Log.d(TAG, "ClientSocket close");
             } catch (IOException e) {
                 e.printStackTrace();

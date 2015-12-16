@@ -17,6 +17,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -222,6 +223,15 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                         .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
                 if (networkInfo.isConnected()) {
+                    MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
+                    LocalBroadcastManager.getInstance(MainActivity.this)
+                            .registerReceiver(new BroadcastReceiver() {
+                                @Override
+                                public void onReceive(Context context, Intent intent) {
+                                    String message = (String) intent.getSerializableExtra("EXTRA_DATA");
+                                    Toast.makeText(MainActivity.this, "Receive: " + message, Toast.LENGTH_SHORT).show();
+                                }
+                            }, new IntentFilter("WIFI_DIRECT_SOCKET"));
                     mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
                         @Override
                         public void onConnectionInfoAvailable(WifiP2pInfo info) {
@@ -229,6 +239,14 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                 Toast.makeText(MainActivity.this, "This is group owner", Toast.LENGTH_SHORT).show();
                             } else if (info.groupFormed) {
                                 Toast.makeText(MainActivity.this, "This is client", Toast.LENGTH_SHORT).show();
+                                Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
+                                broadcastIntent.putExtra("EXTRA_IP", "255.255.255.255");
+                                broadcastIntent.putExtra("EXTRA_DATA", "Hi");
+                                if (MainActivity.this.startService(broadcastIntent) != null) {
+                                    Toast.makeText(MainActivity.this, "Broadcast success", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Broadcast failed", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }
                     });
