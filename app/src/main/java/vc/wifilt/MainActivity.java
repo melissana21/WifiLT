@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
     @Override
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
-
+        Toast.makeText(MainActivity.this, item.toString(), Toast.LENGTH_SHORT).show();
     }
 
     @Override

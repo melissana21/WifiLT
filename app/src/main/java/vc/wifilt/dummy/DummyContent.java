@@ -34,11 +34,11 @@ public class DummyContent {
 
     private static void addItem(DummyItem item) {
         ITEMS.add(item);
-        ITEM_MAP.put(item.id, item);
+//        ITEM_MAP.put(item.id, item);
     }
 
     private static DummyItem createDummyItem(int position) {
-        return new DummyItem(String.valueOf(position), "Item " + position, makeDetails(position));
+        return new DummyItem("Device " + String.valueOf(position), "Available");
     }
 
     private static String makeDetails(int position) {
@@ -54,19 +54,17 @@ public class DummyContent {
      * A dummy item representing a piece of content.
      */
     public static class DummyItem {
-        public final String id;
-        public final String content;
-        public final String details;
+        public final String name;
+        public final String status;
 
-        public DummyItem(String id, String content, String details) {
-            this.id = id;
-            this.content = content;
-            this.details = details;
+        public DummyItem(String name, String status) {
+            this.name = name;
+            this.status = status;
         }
 
         @Override
         public String toString() {
-            return content;
+            return name;
         }
     }
 }
