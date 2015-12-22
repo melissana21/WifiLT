@@ -146,6 +146,15 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     Toast.makeText(MainActivity.this, "Connect failed", Toast.LENGTH_SHORT).show();
                 }
             });
+        } else if (item.status == WifiP2pDevice.CONNECTED) {
+            Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
+            broadcastIntent.putExtra("EXTRA_IP", "224.0.0.1");
+            broadcastIntent.putExtra("EXTRA_DATA", "Hi");
+            if (MainActivity.this.startService(broadcastIntent) != null) {
+                Toast.makeText(MainActivity.this, "Broadcast success", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "Broadcast failed", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -259,14 +268,6 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                 Toast.makeText(MainActivity.this, "This is group owner", Toast.LENGTH_SHORT).show();
                             } else if (info.groupFormed) {
                                 Toast.makeText(MainActivity.this, "This is client", Toast.LENGTH_SHORT).show();
-                                Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
-                                broadcastIntent.putExtra("EXTRA_IP", "255.255.255.255");
-                                broadcastIntent.putExtra("EXTRA_DATA", "Hi");
-                                if (MainActivity.this.startService(broadcastIntent) != null) {
-                                    Toast.makeText(MainActivity.this, "Broadcast success", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(MainActivity.this, "Broadcast failed", Toast.LENGTH_SHORT).show();
-                                }
                             }
                         }
                     });

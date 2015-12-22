@@ -3,6 +3,7 @@ package vc.wifilt;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -12,7 +13,8 @@ import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 
 /**
  * Provides a ServerSocket waiting for socket to connect.
@@ -23,7 +25,9 @@ import java.net.DatagramSocket;
  */
 public class ServerSocketService extends Service {
 //    private ServerSocket mServerSocket = null;
-    protected static DatagramSocket mServerSocket = null;
+//    protected static DatagramSocket mServerSocket = null;
+    WifiManager.MulticastLock mMulticastLock;
+    MulticastSocket mServerSocket = null;
     public static final String TAG = "ServerSocket";
 
     @Override
@@ -31,7 +35,20 @@ public class ServerSocketService extends Service {
         int port = intent.getIntExtra("EXTRA_PORT", 31067);
         try {
 //            mServerSocket = new ServerSocket(port);
-            mServerSocket = new DatagramSocket(port);
+//            mServerSocket = new DatagramSocket(port);
+
+            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            mMulticastLock = wifiManager.createMulticastLock("multicastLock");
+            mMulticastLock.setReferenceCounted(true);
+            mMulticastLock.acquire();
+
+            InetAddress address = null;
+//            MulticastSocket clientSocket = null;
+
+            mServerSocket = new MulticastSocket(port);
+            address = InetAddress.getByName("224.0.0.1");
+            mServerSocket.joinGroup(address);
+
             Log.d(TAG, "ServerSocket start");
             ServerThread serverThread = new ServerThread(this, mServerSocket);
             serverThread.start();
@@ -43,6 +60,7 @@ public class ServerSocketService extends Service {
 
     @Override
     public void onDestroy() {
+        mMulticastLock.release();
 /*        try {
             mServerSocket.close();
             Log.d(TAG, "ServerSocket close");
@@ -61,9 +79,10 @@ public class ServerSocketService extends Service {
 class ServerThread extends Thread {
     private Context mContext = null;
 //    private ServerSocket mServerSocket = null;
-    private DatagramSocket mServerSocket = null;
+//    private DatagramSocket mServerSocket = null;
+    private MulticastSocket mServerSocket = null;
 
-    public ServerThread(Context context, DatagramSocket serverSocket) {
+    public ServerThread(Context context, MulticastSocket serverSocket) {
         super();
         mContext = context;
         mServerSocket = serverSocket;
@@ -77,6 +96,7 @@ class ServerThread extends Thread {
                 if (mServerSocket.isClosed()) {
                     return;
                 }
+
                 DatagramPacket packet = new DatagramPacket(new byte[128], 128);
                 mServerSocket.receive(packet);
                 String clientIP = packet.getAddress().toString();

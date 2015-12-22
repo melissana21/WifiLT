@@ -36,8 +36,9 @@ public class ClientSocketService extends IntentService {
                 DatagramPacket packet = new DatagramPacket(message, message.length);
                 packet.setAddress(InetAddress.getByName(ip));
                 packet.setPort(port);
-                DatagramSocket socket = ServerSocketService.mServerSocket;
-                socket.setBroadcast(true);
+//                DatagramSocket socket = ServerSocketService.mServerSocket;
+//                socket.setBroadcast(true);
+                DatagramSocket socket = new DatagramSocket();
                 socket.send(packet);
 
                 Log.d(TAG, "ClientSocket start");
