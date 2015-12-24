@@ -29,7 +29,16 @@ import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements DeviceFragment.OnListFragmentInteractionListener, LogFragment.OnFragmentInteractionListener {
@@ -44,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     WifiP2pManager.Channel mChannel;
     WifiDirectBroadcastReceiver mWifiDirectBroadcastReceiver;
     public static final String TAG="MainActivity";
+    private String mGroupOwnerIP;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +129,17 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     });
                 } else {
                     switchItem.setTitle(R.string.start_service_title);
-                    stopService();
+
+                    MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
+                    LocalBroadcastManager.getInstance(MainActivity.this)
+                            .registerReceiver(new BroadcastReceiver() {
+                                @Override
+                                public void onReceive(Context context, Intent intent) {
+                                    String message = (String) intent.getSerializableExtra("EXTRA_DATA");
+                                    Toast.makeText(MainActivity.this, "Receive: " + message, Toast.LENGTH_SHORT).show();
+                                }
+                            }, new IntentFilter("WIFI_DIRECT_SOCKET"));
+//                    stopService();
                 }
             }
         });
@@ -128,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
     @Override
     public void onListFragmentInteraction(WifiP2pDevice item) {
-        Toast.makeText(MainActivity.this, item.toString(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(MainActivity.this, item.toString(), Toast.LENGTH_SHORT).show();
 
         if (item.status == WifiP2pDevice.AVAILABLE) {
             WifiP2pConfig config = new WifiP2pConfig();
@@ -138,7 +158,6 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
             mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
-
                 }
 
                 @Override
@@ -147,15 +166,33 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 }
             });
         } else if (item.status == WifiP2pDevice.CONNECTED) {
+            Toast.makeText(MainActivity.this, "IP: " + getDottedDecimalIP(getLocalIPAddress()), Toast.LENGTH_SHORT).show();
+            String destIP;
+            if (item.isGroupOwner()) {
+                destIP = mGroupOwnerIP;
+            } else {
+                Toast.makeText(MainActivity.this, item.deviceAddress, Toast.LENGTH_SHORT).show();
+                destIP = item.deviceAddress;
+            }
+            Toast.makeText(MainActivity.this, destIP, Toast.LENGTH_SHORT).show();
             Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
-            broadcastIntent.putExtra("EXTRA_IP", "224.0.0.1");
+//            broadcastIntent.putExtra("EXTRA_IP", "224.0.0.1");
+            broadcastIntent.putExtra("EXTRA_IP", "192.168.49.255");
             broadcastIntent.putExtra("EXTRA_DATA", "Hi");
             if (MainActivity.this.startService(broadcastIntent) != null) {
                 Toast.makeText(MainActivity.this, "Broadcast success", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(MainActivity.this, "Broadcast failed", Toast.LENGTH_SHORT).show();
             }
-        }
+/*
+            try {
+                for (NetworkInterface n : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                    Toast.makeText(MainActivity.this, n.getName() + " : " + n.getDisplayName(), Toast.LENGTH_SHORT).show();
+                }
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+*/        }
     }
 
     @Override
@@ -252,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                         .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
                 if (networkInfo.isConnected()) {
-                    MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
+/*                    MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
                     LocalBroadcastManager.getInstance(MainActivity.this)
                             .registerReceiver(new BroadcastReceiver() {
                                 @Override
@@ -261,14 +298,16 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                     Toast.makeText(MainActivity.this, "Receive: " + message, Toast.LENGTH_SHORT).show();
                                 }
                             }, new IntentFilter("WIFI_DIRECT_SOCKET"));
-                    mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
+*/                    mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
                         @Override
                         public void onConnectionInfoAvailable(WifiP2pInfo info) {
                             if (info.groupFormed && info.isGroupOwner) {
                                 Toast.makeText(MainActivity.this, "This is group owner", Toast.LENGTH_SHORT).show();
-                            } else if (info.groupFormed) {
+                            } else if (info.groupFormed){
                                 Toast.makeText(MainActivity.this, "This is client", Toast.LENGTH_SHORT).show();
                             }
+                            mGroupOwnerIP = info.groupOwnerAddress.getHostAddress();
+                            Toast.makeText(MainActivity.this, "GO's IP:" + mGroupOwnerIP, Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -276,5 +315,39 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
             }
         }
+    }
+
+    private byte[] getLocalIPAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        if (inetAddress instanceof Inet4Address) { // fix for Galaxy Nexus. IPv4 is easy to use :-)
+                            return inetAddress.getAddress();
+                        }
+                        //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        } catch (NullPointerException ex) {
+            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        }
+        return null;
+    }
+
+    private String getDottedDecimalIP(byte[] ipAddr) {
+        //convert to dotted decimal notation:
+        String ipAddrStr = "";
+        for (int i=0; i<ipAddr.length; i++) {
+            if (i > 0) {
+                ipAddrStr += ".";
+            }
+            ipAddrStr += ipAddr[i]&0xFF;
+        }
+        return ipAddrStr;
     }
 }

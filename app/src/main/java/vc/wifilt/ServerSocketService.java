@@ -13,7 +13,9 @@ import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 
 /**
@@ -25,9 +27,9 @@ import java.net.MulticastSocket;
  */
 public class ServerSocketService extends Service {
 //    private ServerSocket mServerSocket = null;
-//    protected static DatagramSocket mServerSocket = null;
-    WifiManager.MulticastLock mMulticastLock;
-    MulticastSocket mServerSocket = null;
+    protected static DatagramSocket mServerSocket = null;
+//    WifiManager.MulticastLock mMulticastLock;
+//    MulticastSocket mServerSocket = null;
     public static final String TAG = "ServerSocket";
 
     @Override
@@ -35,19 +37,20 @@ public class ServerSocketService extends Service {
         int port = intent.getIntExtra("EXTRA_PORT", 31067);
         try {
 //            mServerSocket = new ServerSocket(port);
-//            mServerSocket = new DatagramSocket(port);
+            mServerSocket = new DatagramSocket(port);
 
-            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-            mMulticastLock = wifiManager.createMulticastLock("multicastLock");
-            mMulticastLock.setReferenceCounted(true);
-            mMulticastLock.acquire();
+//            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+//            mMulticastLock = wifiManager.createMulticastLock("multicastLock");
+//            mMulticastLock.setReferenceCounted(true);
+//            mMulticastLock.acquire();
 
             InetAddress address = null;
 //            MulticastSocket clientSocket = null;
 
-            mServerSocket = new MulticastSocket(port);
-            address = InetAddress.getByName("224.0.0.1");
-            mServerSocket.joinGroup(address);
+//            mServerSocket = new MulticastSocket(new InetSocketAddress(InetAddress.getByName("224.0.0.1"), port));
+//            mServerSocket = new MulticastSocket(port);
+//            address = InetAddress.getByName("224.0.0.1");
+//            mServerSocket.joinGroup(address);
 
             Log.d(TAG, "ServerSocket start");
             ServerThread serverThread = new ServerThread(this, mServerSocket);
@@ -60,14 +63,10 @@ public class ServerSocketService extends Service {
 
     @Override
     public void onDestroy() {
-        mMulticastLock.release();
-/*        try {
-            mServerSocket.close();
-            Log.d(TAG, "ServerSocket close");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-*/    }
+//        mMulticastLock.release();
+        mServerSocket.close();
+        Log.d(TAG, "ServerSocket close");
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -79,10 +78,10 @@ public class ServerSocketService extends Service {
 class ServerThread extends Thread {
     private Context mContext = null;
 //    private ServerSocket mServerSocket = null;
-//    private DatagramSocket mServerSocket = null;
-    private MulticastSocket mServerSocket = null;
+    private DatagramSocket mServerSocket = null;
+//    private MulticastSocket mServerSocket = null;
 
-    public ServerThread(Context context, MulticastSocket serverSocket) {
+    public ServerThread(Context context, DatagramSocket serverSocket) {
         super();
         mContext = context;
         mServerSocket = serverSocket;
