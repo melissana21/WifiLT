@@ -30,8 +30,12 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -54,6 +58,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     WifiDirectBroadcastReceiver mWifiDirectBroadcastReceiver;
     public static final String TAG="MainActivity";
     private String mGroupOwnerIP;
+    private String mBroadcastAddress;
+    private String mHeaderInfo;
+    private String mData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +88,15 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
+
+        try {
+            mHeaderInfo = convertStreamToString(getAssets().open("StorageNode_1/L0_encDataHeaderInfo_25.txt"));
+            mData = convertStreamToString(getAssets().open("StorageNode_1/L0_encData_25.txt"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.v(TAG, "Read: " + mHeaderInfo);
+        Log.v(TAG, "Data: " + mData);
     }
 
     @Override
@@ -166,19 +182,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 }
             });
         } else if (item.status == WifiP2pDevice.CONNECTED) {
-            Toast.makeText(MainActivity.this, "IP: " + getDottedDecimalIP(getLocalIPAddress()), Toast.LENGTH_SHORT).show();
-            String destIP;
-            if (item.isGroupOwner()) {
-                destIP = mGroupOwnerIP;
-            } else {
-                Toast.makeText(MainActivity.this, item.deviceAddress, Toast.LENGTH_SHORT).show();
-                destIP = item.deviceAddress;
-            }
-            Toast.makeText(MainActivity.this, destIP, Toast.LENGTH_SHORT).show();
             Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
 //            broadcastIntent.putExtra("EXTRA_IP", "224.0.0.1");
-            broadcastIntent.putExtra("EXTRA_IP", "192.168.49.255");
-            broadcastIntent.putExtra("EXTRA_DATA", "Hi");
+            broadcastIntent.putExtra("EXTRA_IP", mBroadcastAddress);
+            broadcastIntent.putExtra("EXTRA_DATA", mData);
             if (MainActivity.this.startService(broadcastIntent) != null) {
                 Toast.makeText(MainActivity.this, "Broadcast success", Toast.LENGTH_SHORT).show();
             } else {
@@ -308,7 +315,13 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                             }
                             mGroupOwnerIP = info.groupOwnerAddress.getHostAddress();
                             Toast.makeText(MainActivity.this, "GO's IP:" + mGroupOwnerIP, Toast.LENGTH_SHORT).show();
-                        }
+                            mBroadcastAddress = getBroadcastAddress(mGroupOwnerIP);
+                            Toast.makeText(MainActivity.this, "Broadcast: " + mBroadcastAddress, Toast.LENGTH_SHORT).show();
+/*                            Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
+                            broadcastIntent.putExtra("EXTRA_IP", mBroadcastAddress);
+                            broadcastIntent.putExtra("EXTRA_DATA", mBroadcastAddress);
+                            MainActivity.this.startService(broadcastIntent);
+*/                        }
                     });
                 }
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
@@ -317,37 +330,31 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         }
     }
 
-    private byte[] getLocalIPAddress() {
-        try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
-                NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress()) {
-                        if (inetAddress instanceof Inet4Address) { // fix for Galaxy Nexus. IPv4 is easy to use :-)
-                            return inetAddress.getAddress();
-                        }
-                        //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
-        } catch (NullPointerException ex) {
-            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+    private String getBroadcastAddress(String groupOwnerIP) {
+        if (groupOwnerIP == null) {
+            return "255.255.255.255";
         }
-        return null;
+        String[] ip = groupOwnerIP.split("\\.");
+        return ip[0] + "." + ip[1] + "." + ip[2] + ".255";
     }
 
-    private String getDottedDecimalIP(byte[] ipAddr) {
-        //convert to dotted decimal notation:
-        String ipAddrStr = "";
-        for (int i=0; i<ipAddr.length; i++) {
-            if (i > 0) {
-                ipAddrStr += ".";
-            }
-            ipAddrStr += ipAddr[i]&0xFF;
+    public static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
         }
-        return ipAddrStr;
+        reader.close();
+        return sb.toString();
+    }
+
+    public static String getStringFromFile (String filePath) throws Exception {
+        File fl = new File(filePath);
+        FileInputStream fin = new FileInputStream(fl);
+        String ret = convertStreamToString(fin);
+        //Make sure you close all streams.
+        fin.close();
+        return ret;
     }
 }
