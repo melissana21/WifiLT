@@ -4,14 +4,14 @@ package vc.wifilt;
  * Created by melissa on 2016/1/4.
  */
 public class PrintHello extends Thread  {
-    static int node_ID;
+   static int node_ID;
     public static void set(int ID){
         node_ID = ID;
     }
 
 
-    public void run(){
-        for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
+    public static void run(int node_ID){
+        //for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
             while (true) {
 
 
@@ -34,6 +34,6 @@ public class PrintHello extends Thread  {
                     break;
                 }
             }
-        }
+       // }
     }
 }
