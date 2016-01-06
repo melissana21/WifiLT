@@ -167,8 +167,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         String index = Integer.toString(declaration.currentLayer);
         String Outputfilename= declaration.Storage_Directory+"1"+declaration.Output_FileName+index+declaration.Output_Extension;
         System.out.println(Outputfilename);
-        System.out.println(declaration.rippleStep[0]);
+        //System.out.println(declaration.rippleStep[0]);
         //System.out.println(declaration.rippleStep[1]);
+        System.out.println(declaration.decVal);
 
 
         try{
