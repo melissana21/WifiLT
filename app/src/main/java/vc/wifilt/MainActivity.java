@@ -29,6 +29,8 @@ import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +38,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -324,8 +327,11 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                             .registerReceiver(new BroadcastReceiver() {
                                 @Override
                                 public void onReceive(Context context, Intent intent) {
+                                    Gson gson = new Gson();
                                     String message = (String) intent.getSerializableExtra("EXTRA_DATA");
-                                    Toast.makeText(MainActivity.this, "Receive: " + message, Toast.LENGTH_SHORT).show();
+                                    PacketData packetData = gson.fromJson(message, PacketData.class);
+                                    String type = packetData.getType();
+
                                 }
                             }, new IntentFilter("WIFI_DIRECT_SOCKET"));
                     mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
@@ -384,5 +390,17 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         //Make sure you close all streams.
         fin.close();
         return ret;
+    }
+
+    protected void sendPacket(String type, Serializable data) {
+        Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
+        broadcastIntent.putExtra("EXTRA_IP", mBroadcastAddress);
+        broadcastIntent.putExtra("EXTRA_TYPE", type);
+        broadcastIntent.putExtra("EXTRA_DATA", data);
+        if (MainActivity.this.startService(broadcastIntent) != null) {
+            Log.v(TAG, "Broadcast: " + data.toString());
+        } else {
+            Log.v(TAG, "Broadcast failed");
+        }
     }
 }
