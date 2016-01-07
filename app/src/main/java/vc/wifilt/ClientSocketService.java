@@ -32,13 +32,12 @@ public class ClientSocketService extends IntentService {
             intent.setAction("WIFI_DIRECT_SOCKET");
             String ip = intent.getStringExtra("EXTRA_IP");
             int port = intent.getIntExtra("EXTRA_PORT", 31067);
-            String type = intent.getStringExtra("EXTRA_TYPE");
+//            String type = intent.getStringExtra("EXTRA_TYPE");
             Serializable data = intent.getSerializableExtra("EXTRA_DATA");
             try {
                 Gson gson = new Gson();
 //                Socket socket = new Socket(ip, port);
-                PacketData packetData = new PacketData(type, data);
-                byte[] message = gson.toJson(packetData).getBytes();
+                byte[] message = gson.toJson(data).getBytes();
                 DatagramPacket packet = new DatagramPacket(message, message.length);
                 packet.setAddress(InetAddress.getByName(ip));
                 packet.setPort(port);

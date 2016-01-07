@@ -44,6 +44,18 @@ public class LTDistributed_decoder {
                             declaration.LocalRead[node_ID]++;
                             decode = 1;
                         }
+                        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", declaration.PData_requireSrc[node_ID][r][s]-1);
+                        MainActivity.sendPacket(packetData);
+                        MainActivity.isWaiting = true;
+                        synchronized (MainActivity.waitingLock) {
+                            while (MainActivity.isWaiting) {
+                                try {
+                                    MainActivity.waitingLock.wait();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
                         if(declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1] != 0)
                         {
                             if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] == 0){
@@ -56,6 +68,18 @@ public class LTDistributed_decoder {
 
                             //computationStep++;
 //
+                            packetData = new PacketData("REQUEST_GLOBAL_DECVAL", declaration.messageSize[declaration.currentLayer]);
+                            packetData.setPosition(((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]));
+                            MainActivity.isWaiting = true;
+                            synchronized (MainActivity.waitingLock) {
+                                while (MainActivity.isWaiting) {
+                                    try {
+                                        MainActivity.waitingLock.wait();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
                             System.arraycopy(declaration.decVal,((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]),tmp,0,declaration.messageSize[declaration.currentLayer]);
 
                             // Decode XOR
@@ -107,7 +131,21 @@ public class LTDistributed_decoder {
                             declaration.decRecord[node_ID][index - 1] = rStep;
                             declaration.LocalWrite[node_ID]++;
                             declaration.GlobalTryWrite[node_ID]++;
+                            PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", index - 1);
+                            MainActivity.sendPacket(packetData);
+                            MainActivity.isWaiting = true;
+                            synchronized (MainActivity.waitingLock) {
+                                while (MainActivity.isWaiting) {
+                                    try {
+                                        MainActivity.waitingLock.wait();
+                                    } catch (InterruptedException ex) {
+                                        ex.printStackTrace();
+                                    }
+                                }
+                            }
                             if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
+                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", declaration.PData_codedData[node_ID][r]);
+                                packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
                                 System.arraycopy(declaration.PData_codedData[node_ID][r],0,declaration.decVal,((index - 1) * declaration.messageSize[declaration.currentLayer]),declaration.messageSize[declaration.currentLayer]);
                                 declaration.GlobalWrite[node_ID]++;
                             }

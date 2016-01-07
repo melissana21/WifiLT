@@ -38,18 +38,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.util.Arrays;
 import java.util.List;
-
-import java.io.IOException;
-import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity implements DeviceFragment.OnListFragmentInteractionListener, LogFragment.OnFragmentInteractionListener{
 
@@ -66,9 +57,14 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     WifiDirectBroadcastReceiver mWifiDirectBroadcastReceiver;
     public static final String TAG="MainActivity";
     private String mGroupOwnerIP;
-    private String mBroadcastAddress;
+    private static String mBroadcastAddress;
+    private static boolean sIsGroupOwner;
+    private static String mMacAddress;
     private String mHeaderInfo;
     private String mData;
+
+    protected static final Object waitingLock = new Object();
+    protected static boolean isWaiting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -330,14 +326,63 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                     Gson gson = new Gson();
                                     String message = (String) intent.getSerializableExtra("EXTRA_DATA");
                                     PacketData packetData = gson.fromJson(message, PacketData.class);
+                                    PacketData returnData;
                                     String type = packetData.getType();
-
+                                    switch (type) {
+                                        case "REQUEST_GLOBAL_RECORD":
+                                            if (!sIsGroupOwner) {
+                                                return;
+                                            }
+                                            returnData =
+                                                    new PacketData("ANSWER_GLOBAL_RECORD",
+                                                            declaration.globalDecodedSymbolsRecord[(int) packetData.getData()]);
+                                            returnData.setDes(packetData.getOri());
+                                            sendPacket(returnData);
+                                            break;
+                                        case "REQUEST_GLOBAL_DECVAL":
+                                            if (!sIsGroupOwner) {
+                                                return;
+                                            }
+                                            byte[] array = Arrays.copyOfRange(declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+                                            returnData = new PacketData("ANSWER_GLOBAL_DECVAL", array);
+                                            returnData.setPosition(packetData.getPosition());
+                                            returnData.setDes(packetData.getOri());
+                                            sendPacket(returnData);
+                                            break;
+                                        case "UPDATE_GLOBAL_DECVAL":
+                                            if (!sIsGroupOwner) {
+                                                return;
+                                            }
+                                            System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+                                            break;
+                                        case "ANSWER_GLOBAL_RECORD":
+                                            if (!packetData.getDes().equals(mMacAddress)) {
+                                                return;
+                                            }
+                                            declaration.globalDecodedSymbolsRecord[(int) packetData.getData()] = (int) packetData.getData();
+                                            synchronized (waitingLock) {
+                                                isWaiting = false;
+                                                waitingLock.notify();
+                                            }
+                                            break;
+                                        case "ANSWER_GLOBAL_DECVAL":
+                                            if (!packetData.getDes().equals(mMacAddress)) {
+                                                return;
+                                            }
+                                            System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+                                            synchronized (waitingLock) {
+                                                isWaiting = false;
+                                                waitingLock.notify();
+                                            }
+                                            break;
+                                    }
                                 }
                             }, new IntentFilter("WIFI_DIRECT_SOCKET"));
                     mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
                         @Override
                         public void onConnectionInfoAvailable(WifiP2pInfo info) {
                             if (info.groupFormed && info.isGroupOwner) {
+                                sIsGroupOwner = true;
                                 Toast.makeText(MainActivity.this, "This is group owner", Toast.LENGTH_SHORT).show();
                             } else if (info.groupFormed){
                                 Toast.makeText(MainActivity.this, "This is client", Toast.LENGTH_SHORT).show();
@@ -353,13 +398,18 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 */                        }
                     });
 
-
+                    declaration.messageSize[declaration.currentLayer] = 268;
+                    declaration.srcSymbols[declaration.currentLayer] = 1000;
+                    declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
+                    declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
                     int node_ID = 0;
                     //// set node_ID(0,1)  cache : -1(owner)
                     AfterP2P.main(node_ID);  //////  Main
                 }
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-
+                WifiP2pDevice device = (WifiP2pDevice) intent
+                        .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+                mMacAddress = device.deviceAddress;
             }
         }
     }
@@ -392,12 +442,12 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         return ret;
     }
 
-    protected void sendPacket(String type, Serializable data) {
-        Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
+    protected static void sendPacket(PacketData data) {
+        data.setOri(mMacAddress);
+        Intent broadcastIntent = new Intent(MainContext, ClientSocketService.class);
         broadcastIntent.putExtra("EXTRA_IP", mBroadcastAddress);
-        broadcastIntent.putExtra("EXTRA_TYPE", type);
         broadcastIntent.putExtra("EXTRA_DATA", data);
-        if (MainActivity.this.startService(broadcastIntent) != null) {
+        if (MainContext.startService(broadcastIntent) != null) {
             Log.v(TAG, "Broadcast: " + data.toString());
         } else {
             Log.v(TAG, "Broadcast failed");

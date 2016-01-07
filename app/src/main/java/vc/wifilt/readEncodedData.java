@@ -84,16 +84,19 @@ public class readEncodedData {
                         declaration.selfDecodedSymbolsRecord[node_ID][index - 1] = 1;
                         declaration.decRecord[node_ID][index - 1] = 1;
 
-                        int GjoinNode= declaration.nodeNum;
+/*                        int GjoinNode= declaration.nodeNum;
                         for(int ii=0; ii<GjoinNode; ii++){
                             if(declaration.selfDecodedSymbolsRecord[ii][index - 1] == 0){
                                 declaration.RippleSize[ii]++;
                             }
                         }
-
+*/
                         declaration.GlobalTryWrite[node_ID]++;
                         if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
                             System.arraycopy(decTemp,0,declaration.decVal,((index - 1) * declaration.messageSize[declaration.currentLayer]),declaration.messageSize[declaration.currentLayer]);
+                            PacketData packetData = new PacketData("UPDATE_GLOBAL_DECVAL", decTemp);
+                            packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
+                            MainActivity.sendPacket(packetData);
                             //System.out.println(declaration.decVal);
                             //(declaration.decVal + ((index - 1) * declaration.messageSize)), decTemp, declaration.messageSize);
                             declaration.GlobalWrite[node_ID]++;

@@ -28,7 +28,7 @@ public class AfterP2P {
 
 
        // }
-        declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
+//        declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
 
         System.out.println(declaration.decVal.length);
         System.out.print("messageSize : ");
@@ -38,7 +38,7 @@ public class AfterP2P {
         System.out.print("mPaddingSize ");
         System.out.println(declaration.mPaddingSize[declaration.currentLayer]);
 
-        declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
+//        declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
         declaration.decRecord = new int[declaration.nodeNum][declaration.srcSymbols[declaration.currentLayer]];//init=0
         declaration.selfDecodedSymbolsRecord = new int[declaration.nodeNum][declaration.srcSymbols[declaration.currentLayer]];//init=0
 
