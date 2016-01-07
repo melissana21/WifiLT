@@ -179,17 +179,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     });
                 } else {
                     switchItem.setTitle(R.string.start_service_title);
-
-                    MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
-                    LocalBroadcastManager.getInstance(MainActivity.this)
-                            .registerReceiver(new BroadcastReceiver() {
-                                @Override
-                                public void onReceive(Context context, Intent intent) {
-                                    String message = (String) intent.getSerializableExtra("EXTRA_DATA");
-                                    Toast.makeText(MainActivity.this, "Receive: " + message, Toast.LENGTH_SHORT).show();
-                                }
-                            }, new IntentFilter("WIFI_DIRECT_SOCKET"));
-//                    stopService();
+                    stopService();
                 }
             }
         });
@@ -217,7 +207,6 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
             });
         } else if (item.status == WifiP2pDevice.CONNECTED) {
             Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
-//            broadcastIntent.putExtra("EXTRA_IP", "224.0.0.1");
             broadcastIntent.putExtra("EXTRA_IP", mBroadcastAddress);
             broadcastIntent.putExtra("EXTRA_DATA", mData);
             if (MainActivity.this.startService(broadcastIntent) != null) {
@@ -330,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                         .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
                 if (networkInfo.isConnected()) {
-/*                    MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
+                    MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
                     LocalBroadcastManager.getInstance(MainActivity.this)
                             .registerReceiver(new BroadcastReceiver() {
                                 @Override
@@ -339,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                     Toast.makeText(MainActivity.this, "Receive: " + message, Toast.LENGTH_SHORT).show();
                                 }
                             }, new IntentFilter("WIFI_DIRECT_SOCKET"));
-*/                    mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
+                    mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
                         @Override
                         public void onConnectionInfoAvailable(WifiP2pInfo info) {
                             if (info.groupFormed && info.isGroupOwner) {

@@ -28,8 +28,6 @@ import java.net.MulticastSocket;
 public class ServerSocketService extends Service {
 //    private ServerSocket mServerSocket = null;
     protected static DatagramSocket mServerSocket = null;
-//    WifiManager.MulticastLock mMulticastLock;
-//    MulticastSocket mServerSocket = null;
     public static final String TAG = "ServerSocket";
 
     @Override
@@ -39,18 +37,7 @@ public class ServerSocketService extends Service {
 //            mServerSocket = new ServerSocket(port);
             mServerSocket = new DatagramSocket(port);
 
-//            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-//            mMulticastLock = wifiManager.createMulticastLock("multicastLock");
-//            mMulticastLock.setReferenceCounted(true);
-//            mMulticastLock.acquire();
-
             InetAddress address = null;
-//            MulticastSocket clientSocket = null;
-
-//            mServerSocket = new MulticastSocket(new InetSocketAddress(InetAddress.getByName("224.0.0.1"), port));
-//            mServerSocket = new MulticastSocket(port);
-//            address = InetAddress.getByName("224.0.0.1");
-//            mServerSocket.joinGroup(address);
 
             Log.d(TAG, "ServerSocket start");
             ServerThread serverThread = new ServerThread(this, mServerSocket);
@@ -63,7 +50,6 @@ public class ServerSocketService extends Service {
 
     @Override
     public void onDestroy() {
-//        mMulticastLock.release();
         mServerSocket.close();
         Log.d(TAG, "ServerSocket close");
     }
@@ -79,7 +65,6 @@ class ServerThread extends Thread {
     private Context mContext = null;
 //    private ServerSocket mServerSocket = null;
     private DatagramSocket mServerSocket = null;
-//    private MulticastSocket mServerSocket = null;
 
     public ServerThread(Context context, DatagramSocket serverSocket) {
         super();
@@ -96,7 +81,7 @@ class ServerThread extends Thread {
                     return;
                 }
 
-                DatagramPacket packet = new DatagramPacket(new byte[128], 128);
+                DatagramPacket packet = new DatagramPacket(new byte[512], 512);
                 mServerSocket.receive(packet);
                 String clientIP = packet.getAddress().toString();
                 Serializable data = new String(packet.getData());
