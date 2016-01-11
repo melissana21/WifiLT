@@ -27,8 +27,8 @@ public class readEncodedData {
             String index_1 = Integer.toString(chooseDecPacketNum);
             String index_3 = Integer.toString(layer);
 
-            String HeaderInfo = declaration.Storage_Directory + s + declaration.Encoded_FileName + index_3 + declaration.Header_FileName + index_1 + declaration.Encoded_Extension;
-            String Data = declaration.Storage_Directory + s + declaration.Encoded_FileName + index_3 + declaration.Data_FileName + index_1 + declaration.Encoded_Extension;
+            String HeaderInfo = myContext.getExternalFilesDir(null).getAbsolutePath() + declaration.Storage_Directory + s + declaration.Encoded_FileName + index_3 + declaration.Header_FileName + index_1 + declaration.Encoded_Extension;
+            String Data = myContext.getExternalFilesDir(null).getAbsolutePath() + declaration.Storage_Directory + s + declaration.Encoded_FileName + index_3 + declaration.Data_FileName + index_1 + declaration.Encoded_Extension;
             //File file = new File(HeaderInfo);
 
 
@@ -36,9 +36,9 @@ public class readEncodedData {
 
             //if(file.exists()){
             try{
-                //FileInputStream fi=new FileInputStream(Data);
+                FileInputStream fi=new FileInputStream(Data);
                 byte decTemp[]=new byte[declaration.messageSize[declaration.currentLayer]];
-               // fi.read(decTemp);
+                fi.read(decTemp);
 
 
                 //      System.out.print("HeaderInfo : ");
@@ -46,12 +46,12 @@ public class readEncodedData {
                 //      System.out.print("Data : ");
                 //      System.out.println(Data);
 
-                String headTemp = convertStreamToString(myContext.getAssets().open(HeaderInfo));
-                InputStream fi =myContext.getAssets().open(Data);
+                //String headTemp = convertStreamToString(myContext.getAssets().open(HeaderInfo));
+                //InputStream fi =myContext.getAssets().open(Data);
                 fi.read(decTemp);
                 System.out.println(decTemp);
 
-                //String headTemp = readFile(HeaderInfo);
+                String headTemp = readFile(HeaderInfo);
                 String[] AfterSplit = headTemp.split("_");
                 int fNID = Integer.valueOf(AfterSplit[0]).intValue();
                 declaration.messageSize[declaration.currentLayer] = Integer.valueOf(AfterSplit[1]).intValue();
@@ -152,7 +152,7 @@ public class readEncodedData {
     }
 
 
-    /*public static String readFile(String fileName) throws IOException {
+    public static String readFile(String fileName) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         try {
             StringBuilder sb = new StringBuilder();
@@ -167,9 +167,9 @@ public class readEncodedData {
         } finally {
             br.close();
         }
-    }*/
+    }
 
-    public static String convertStreamToString(InputStream is) throws IOException {
+    /*public static String convertStreamToString(InputStream is) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
         String line = null;
@@ -178,5 +178,5 @@ public class readEncodedData {
         }
         reader.close();
         return sb.toString();
-    }
+    }*/
 }

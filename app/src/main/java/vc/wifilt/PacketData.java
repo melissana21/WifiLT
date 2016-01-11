@@ -9,10 +9,10 @@ public class PacketData implements Serializable {
     private String ori;
     private String des;
     private String type;
-    private Serializable data;
+    private byte[] data;
     private int position;
 
-    public PacketData(String type, Serializable data) {
+    public PacketData(String type, byte[] data) {
         this.type = type;
         this.data = data;
     }
@@ -33,7 +33,7 @@ public class PacketData implements Serializable {
         return type;
     }
 
-    public Serializable getData() {
+    public byte[] getData() {
         return data;
     }
 

@@ -81,10 +81,10 @@ class ServerThread extends Thread {
                     return;
                 }
 
-                DatagramPacket packet = new DatagramPacket(new byte[512], 512);
+                DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
                 mServerSocket.receive(packet);
                 String clientIP = packet.getAddress().toString();
-                Serializable data = new String(packet.getData());
+                String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
 /*                Socket socket = mServerSocket.accept();
                 ObjectInputStream objectInputStream =
                         new ObjectInputStream(socket.getInputStream());
@@ -95,7 +95,9 @@ class ServerThread extends Thread {
                 intent.putExtra("EXTRA_DATA", data);
                 intent.putExtra("EXTRA_IP",clientIP);
 
-                Log.d(ServerSocketService.TAG, "Socket accept: " + data.toString());
+                Log.d(ServerSocketService.TAG, "Socket accept: " + data);
+                Log.v(ServerSocketService.TAG, "string: " + data.toString());
+                Log.v(ServerSocketService.TAG, "byte to string: " + new String(data));
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
 //            } catch (ClassNotFoundException e) {
 //                e.printStackTrace();

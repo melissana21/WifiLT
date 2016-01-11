@@ -1,5 +1,7 @@
 package vc.wifilt;
 
+import java.math.BigInteger;
+
 /**
  * Created by melissa on 2016/1/4.
  */
@@ -44,7 +46,7 @@ public class LTDistributed_decoder {
                             declaration.LocalRead[node_ID]++;
                             decode = 1;
                         }
-                        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", declaration.PData_requireSrc[node_ID][r][s]-1);
+                        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", BigInteger.valueOf(declaration.PData_requireSrc[node_ID][r][s]-1).toByteArray());
                         MainActivity.sendPacket(packetData);
                         MainActivity.isWaiting = true;
                         synchronized (MainActivity.waitingLock) {
@@ -68,7 +70,7 @@ public class LTDistributed_decoder {
 
                             //computationStep++;
 //
-                            packetData = new PacketData("REQUEST_GLOBAL_DECVAL", declaration.messageSize[declaration.currentLayer]);
+                            packetData = new PacketData("REQUEST_GLOBAL_DECVAL", BigInteger.valueOf(declaration.messageSize[declaration.currentLayer]).toByteArray());
                             packetData.setPosition(((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]));
                             MainActivity.isWaiting = true;
                             synchronized (MainActivity.waitingLock) {
@@ -131,7 +133,7 @@ public class LTDistributed_decoder {
                             declaration.decRecord[node_ID][index - 1] = rStep;
                             declaration.LocalWrite[node_ID]++;
                             declaration.GlobalTryWrite[node_ID]++;
-                            PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", index - 1);
+                            PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", BigInteger.valueOf(index - 1).toByteArray());
                             MainActivity.sendPacket(packetData);
                             MainActivity.isWaiting = true;
                             synchronized (MainActivity.waitingLock) {

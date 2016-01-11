@@ -1,5 +1,7 @@
 package vc.wifilt;
 
+import android.util.Log;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -62,13 +64,16 @@ public class AfterP2P {
      //   }
 
 
+        Log.v("AfterP2P", "start thread");
         //for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
         PrintHello.set(node_ID);
         Thread t1 = new PrintHello(); // 產生Thread物件
+        Log.v("thread", "printhello: " + t1.getId());
         t1.start(); // 開始執行t.run()
         //}
 
         Thread t2 = new FinishLayer(); // 產生Thread物件
+        Log.v("thread", "finishlayer: " + t2.getId());
         t2.start(); // 開始執行t.run()
         try {
             t2.join();

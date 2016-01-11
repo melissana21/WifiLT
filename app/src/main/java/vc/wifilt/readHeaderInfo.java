@@ -28,14 +28,14 @@ public class readHeaderInfo {
             s = Integer.toString(node_ID + 1);
            //String HeaderInfo = declaration.Storage_Directory + s + declaration.Encoded_FileName + index2+ declaration.Header_FileName + index3 + declaration.Encoded_Extension;
 
-            String HeaderInfo = declaration.Storage_Directory + s + declaration.Encoded_FileName + index2+ declaration.Header_FileName + index3 + declaration.Encoded_Extension;
+            String HeaderInfo = myContext.getExternalFilesDir(null).getAbsolutePath() + declaration.Storage_Directory + s + declaration.Encoded_FileName + index2+ declaration.Header_FileName + index3 + declaration.Encoded_Extension;
 
-            //File file = new File(HeaderInfo);
+            File file = new File(HeaderInfo);
 
-            //if(file.exists()){
-            //    String headTemp = readFile(HeaderInfo);
-            try{
-                String headTemp = convertStreamToString(myContext.getAssets().open(HeaderInfo));
+            if(file.exists()){
+                String headTemp = readFile(HeaderInfo);
+
+                //String headTemp = convertStreamToString(myContext.getAssets().open(HeaderInfo));
                 System.out.println(HeaderInfo);
                 System.out.println(headTemp);
                 String[] AfterSplit = headTemp.split("_");
@@ -44,8 +44,7 @@ public class readHeaderInfo {
                 declaration.srcSymbols[layer] = Integer.valueOf(AfterSplit[2]).intValue();
                 declaration.mPaddingSize[layer] = Integer.valueOf(AfterSplit[3]).intValue();
                 break;
-            } catch (IOException e) {
-                e.printStackTrace();
+
             }
 
 
@@ -59,7 +58,7 @@ public class readHeaderInfo {
 
     }
 
-    public static String convertStreamToString(InputStream is) throws IOException {
+    /*public static String convertStreamToString(InputStream is) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
         String line = null;
@@ -68,10 +67,10 @@ public class readHeaderInfo {
         }
         reader.close();
         return sb.toString();
-    }
+    }*/
 
 
-   /* public static String readFile(String fileName) throws IOException {
+    public static String readFile(String fileName) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         try {
             StringBuilder sb = new StringBuilder();
@@ -86,5 +85,5 @@ public class readHeaderInfo {
         } finally {
             br.close();
         }
-    }*/
+    }
 }

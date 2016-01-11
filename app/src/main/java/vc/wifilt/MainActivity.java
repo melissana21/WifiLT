@@ -38,6 +38,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,10 +59,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     public static final String TAG="MainActivity";
     private String mGroupOwnerIP;
     private static String mBroadcastAddress;
-    private static boolean sIsGroupOwner;
+    private static boolean sIsGroupOwner = false;
     private static String mMacAddress;
-    private String mHeaderInfo;
-    private String mData;
+    private byte[] mHeaderInfo;
+    private byte[] mData;
 
     protected static final Object waitingLock = new Object();
     protected static boolean isWaiting;
@@ -95,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
         MainContext = getApplicationContext();
 
+        Log.v(TAG, "path: " + getExternalFilesDir(null).getAbsolutePath());
 
 
 
@@ -103,15 +105,16 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
 
 
-        /*try {
-            mHeaderInfo = convertStreamToString(getAssets().open("StorageNode_1/L0_encDataHeaderInfo_25.txt"));
-            mData = convertStreamToString(getAssets().open("StorageNode_1/L0_encData_25.txt"));
+
+        try {
+            mHeaderInfo = convertStreamToBytes(getAssets().open("StorageNode_1/L0_encDataHeaderInfo_25.txt"));
+//            mData = convertStreamToString(getAssets().open("StorageNode_1/L0_encData_25.txt"));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.v(TAG, "Read: " + mHeaderInfo);
-        Log.v(TAG, "Data: " + mData);*/
+        Log.v(TAG, "Read: " + new String(mHeaderInfo));
+//        Log.v(TAG, "Data: " + mData);
     }
 
     public static String readFile(String fileName) throws IOException {
@@ -205,7 +208,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 }
             });
         } else if (item.status == WifiP2pDevice.CONNECTED) {
-            Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
+            sendPacket(new PacketData("TEST", mHeaderInfo));
+            sendPacket(new PacketData("TEST", BigInteger.valueOf(1).toByteArray()));
+/*            Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
             broadcastIntent.putExtra("EXTRA_IP", mBroadcastAddress);
             broadcastIntent.putExtra("EXTRA_DATA", mData);
             if (MainActivity.this.startService(broadcastIntent) != null) {
@@ -324,7 +329,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                 @Override
                                 public void onReceive(Context context, Intent intent) {
                                     Gson gson = new Gson();
-                                    String message = (String) intent.getSerializableExtra("EXTRA_DATA");
+                                    String message = intent.getStringExtra("EXTRA_DATA");
+                                    Log.v("receive", message);
+//                                    Log.v("receive", "byte to string: " + new String(message));
                                     PacketData packetData = gson.fromJson(message, PacketData.class);
                                     PacketData returnData;
                                     String type = packetData.getType();
@@ -333,9 +340,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                             if (!sIsGroupOwner) {
                                                 return;
                                             }
+                                            int index = Integer.parseInt(String.valueOf(packetData.getData()));
                                             returnData =
                                                     new PacketData("ANSWER_GLOBAL_RECORD",
-                                                            declaration.globalDecodedSymbolsRecord[(int) packetData.getData()]);
+                                                            BigInteger.valueOf(declaration.globalDecodedSymbolsRecord[index]).toByteArray());
                                             returnData.setDes(packetData.getOri());
                                             sendPacket(returnData);
                                             break;
@@ -359,7 +367,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                             if (!packetData.getDes().equals(mMacAddress)) {
                                                 return;
                                             }
-                                            declaration.globalDecodedSymbolsRecord[(int) packetData.getData()] = (int) packetData.getData();
+                                            int data = Integer.parseInt(String.valueOf(packetData.getData()));
+                                            declaration.globalDecodedSymbolsRecord[data] = data;
                                             synchronized (waitingLock) {
                                                 isWaiting = false;
                                                 waitingLock.notify();
@@ -374,6 +383,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                                                 isWaiting = false;
                                                 waitingLock.notify();
                                             }
+                                            break;
+                                        default:
+                                            Toast.makeText(MainActivity.this, "Receive: " + new String(packetData.getData()), Toast.LENGTH_SHORT).show();
+                                            Log.v(TAG, "data: " + new String(packetData.getData()));
                                             break;
                                     }
                                 }
@@ -397,14 +410,19 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                             MainActivity.this.startService(broadcastIntent);
 */                        }
                     });
+                    int node_ID = 0;
+                    //// set node_ID(0,1)  cache : -1(owner)
+                    declaration.messageSize = new int[3];
+                    declaration.srcSymbols = new int[3];
 
                     declaration.messageSize[declaration.currentLayer] = 268;
                     declaration.srcSymbols[declaration.currentLayer] = 1000;
                     declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
                     declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
-                    int node_ID = 0;
-                    //// set node_ID(0,1)  cache : -1(owner)
-                    AfterP2P.main(node_ID);  //////  Main
+                    if (!sIsGroupOwner) {
+//                        AfterP2P.main(node_ID);  //////  Main
+                    }
+
                 }
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
                 WifiP2pDevice device = (WifiP2pDevice) intent
@@ -433,6 +451,13 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         return sb.toString();
     }
 
+    public static byte[] convertStreamToBytes(InputStream is) throws Exception {
+        byte[] line = new byte[268];
+        is.read(line);
+        is.close();
+        return line;
+    }
+
     public static String getStringFromFile (String filePath) throws Exception {
         File fl = new File(filePath);
         FileInputStream fin = new FileInputStream(fl);
@@ -447,8 +472,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         Intent broadcastIntent = new Intent(MainContext, ClientSocketService.class);
         broadcastIntent.putExtra("EXTRA_IP", mBroadcastAddress);
         broadcastIntent.putExtra("EXTRA_DATA", data);
+        Log.v("sendPacket", "data: " + data.toString());
         if (MainContext.startService(broadcastIntent) != null) {
-            Log.v(TAG, "Broadcast: " + data.toString());
+//            Log.v(TAG, "Broadcast: " + data.toString());
         } else {
             Log.v(TAG, "Broadcast failed");
         }

@@ -1,5 +1,7 @@
 package vc.wifilt;
 
+import android.os.Environment;
+
 /**
  * Created by melissa on 2016/1/4.
  */
@@ -62,7 +64,7 @@ public class declaration {
 
     //int n =100;
     // Storage Location
-    static String Storage_Directory = "StorageNode_";//"C:/Users/melissa/AndroidStudioProjects/WifiLT/app/src/main/assets/StorageNode_";//"D:\\學長CODE\\PC\\node\\EncData2\\StorageNode_";
+    static String Storage_Directory = "/StorageNode_";//"C:/Users/melissa/AndroidStudioProjects/WifiLT/app/src/main/assets/StorageNode_";//"D:\\學長CODE\\PC\\node\\EncData2\\StorageNode_";
 
     // Encoded File Location
     static String Header_FileName = "_encDataHeaderInfo_";

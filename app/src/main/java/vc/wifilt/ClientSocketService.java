@@ -38,6 +38,9 @@ public class ClientSocketService extends IntentService {
                 Gson gson = new Gson();
 //                Socket socket = new Socket(ip, port);
                 byte[] message = gson.toJson(data).getBytes();
+                Log.v(TAG, "data: " + gson.toJson(data));
+                Log.v(TAG, "byte: " + message);
+                Log.v(TAG, "byte to string: " + new String(message));
                 DatagramPacket packet = new DatagramPacket(message, message.length);
                 packet.setAddress(InetAddress.getByName(ip));
                 packet.setPort(port);
@@ -50,7 +53,7 @@ public class ClientSocketService extends IntentService {
 //                ObjectOutputStream objectOutputStream =
 //                        new ObjectOutputStream(socket.getOutputStream());
 //                objectOutputStream.writeObject(data);
-                Log.d(TAG, "Socket sent: " + data.toString());
+//                Log.d(TAG, "Socket sent: " + data.toString());
 //                socket.close();
                 Log.d(TAG, "ClientSocket close");
             } catch (IOException e) {
