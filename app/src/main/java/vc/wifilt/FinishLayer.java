@@ -1,5 +1,7 @@
 package vc.wifilt;
 
+import java.math.BigInteger;
+
 /**
  * Created by melissa on 2016/1/4.
  */
@@ -20,6 +22,8 @@ public class FinishLayer extends Thread{
             unfinishcount = 0;
 
             for(int n = 0 ; n < declaration.srcSymbols[declaration.currentLayer] ; n++){
+//                PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(n).getBytes());
+//                MainActivity.sendPacket(packetData);
                 if(declaration.globalDecodedSymbolsRecord[n] == 0){
 
                     unfinishcount++;

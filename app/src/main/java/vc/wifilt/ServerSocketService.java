@@ -81,7 +81,7 @@ class ServerThread extends Thread {
                     return;
                 }
 
-                DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+                DatagramPacket packet = new DatagramPacket(new byte[2048], 2048);
                 mServerSocket.receive(packet);
                 String clientIP = packet.getAddress().toString();
                 String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
@@ -90,14 +90,14 @@ class ServerThread extends Thread {
                         new ObjectInputStream(socket.getInputStream());
                 Serializable data = (Serializable) objectInputStream.readObject();
                 String clientIP = socket.getInetAddress().getHostAddress();
-*/                Log.d(ServerSocketService.TAG, "client ip address: " + clientIP);
+*///                Log.d(ServerSocketService.TAG, "client ip address: " + clientIP);
                 Intent intent = new Intent("WIFI_DIRECT_SOCKET");
                 intent.putExtra("EXTRA_DATA", data);
                 intent.putExtra("EXTRA_IP",clientIP);
 
-                Log.d(ServerSocketService.TAG, "Socket accept: " + data);
-                Log.v(ServerSocketService.TAG, "string: " + data.toString());
-                Log.v(ServerSocketService.TAG, "byte to string: " + new String(data));
+//                Log.d(ServerSocketService.TAG, "Socket accept: " + data);
+//                Log.v(ServerSocketService.TAG, "string: " + data.toString());
+//                Log.v(ServerSocketService.TAG, "byte to string: " + new String(data));
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
 //            } catch (ClassNotFoundException e) {
 //                e.printStackTrace();

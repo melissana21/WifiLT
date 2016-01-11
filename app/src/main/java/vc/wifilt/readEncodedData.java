@@ -104,6 +104,9 @@ public class readEncodedData {
 
 
                         declaration.globalDecodedSymbolsRecord[index - 1] = 1;
+                        PacketData packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(1).getBytes());
+                        packetData.setPosition(index - 1);
+                        MainActivity.sendPacket(packetData);
                         System.out.print(index);
                         System.out.println(" is degree1 !");
                         declaration.sDecodedSymbols[node_ID]++;
@@ -133,7 +136,7 @@ public class readEncodedData {
                 }
                fi.close();
             }catch (IOException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
             terminate--;
             //System.out.print("dectime = ");

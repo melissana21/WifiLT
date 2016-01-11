@@ -1,6 +1,5 @@
 package vc.wifilt;
 
-import java.math.BigInteger;
 
 /**
  * Created by melissa on 2016/1/4.
@@ -46,7 +45,7 @@ public class LTDistributed_decoder {
                             declaration.LocalRead[node_ID]++;
                             decode = 1;
                         }
-                        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", BigInteger.valueOf(declaration.PData_requireSrc[node_ID][r][s]-1).toByteArray());
+                        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(declaration.PData_requireSrc[node_ID][r][s]-1).getBytes());
                         MainActivity.sendPacket(packetData);
                         MainActivity.isWaiting = true;
                         synchronized (MainActivity.waitingLock) {
@@ -70,7 +69,7 @@ public class LTDistributed_decoder {
 
                             //computationStep++;
 //
-                            packetData = new PacketData("REQUEST_GLOBAL_DECVAL", BigInteger.valueOf(declaration.messageSize[declaration.currentLayer]).toByteArray());
+                            packetData = new PacketData("REQUEST_GLOBAL_DECVAL", String.valueOf(declaration.messageSize[declaration.currentLayer]).getBytes());
                             packetData.setPosition(((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]));
                             MainActivity.isWaiting = true;
                             synchronized (MainActivity.waitingLock) {
@@ -133,7 +132,7 @@ public class LTDistributed_decoder {
                             declaration.decRecord[node_ID][index - 1] = rStep;
                             declaration.LocalWrite[node_ID]++;
                             declaration.GlobalTryWrite[node_ID]++;
-                            PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", BigInteger.valueOf(index - 1).toByteArray());
+                            PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(index - 1).getBytes());
                             MainActivity.sendPacket(packetData);
                             MainActivity.isWaiting = true;
                             synchronized (MainActivity.waitingLock) {
@@ -153,6 +152,9 @@ public class LTDistributed_decoder {
                             }
                             declaration.globalDecodedSymbolsRecord[index - 1] = rStep;
                             declaration.sDecodedSymbols[node_ID]++;
+                            packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(rStep).getBytes());
+                            packetData.setPosition(index - 1);
+                            MainActivity.sendPacket(packetData);
 
                             //sendRecordCount++;
 
