@@ -1,6 +1,10 @@
 package vc.wifilt;
 
 
+import android.util.Log;
+
+import java.util.Arrays;
+
 /**
  * Created by melissa on 2016/1/4.
  */
@@ -19,7 +23,7 @@ public class LTDistributed_decoder {
 
     public static void Distributed_BP (int symbolNum, int dTime, int rStep, int layer, int node_ID )	{
         //printf("in Distributed_BP\n");
-        //System.out.println(symbolNum);
+//        System.out.println("in Distributed_BP, symbolnum = "+ symbolNum);
 
         for(int r = 0 ; r < dTime ; r++)
         {
@@ -46,17 +50,21 @@ public class LTDistributed_decoder {
                             decode = 1;
                         }
                         PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(declaration.PData_requireSrc[node_ID][r][s]-1).getBytes());
-                        MainActivity.sendPacket(packetData);
                         MainActivity.isWaiting = true;
+                        do {
+                            MainActivity.sendPacket(packetData);
+                            Log.v("LTDistributed", "send request global record: " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
                         synchronized (MainActivity.waitingLock) {
-                            while (MainActivity.isWaiting) {
-                                try {
-                                    MainActivity.waitingLock.wait();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
+//                            while (MainActivity.isWaiting) {
+                            try {
+                                MainActivity.waitingLock.wait(5000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
+//                            }
                         }
+                        } while (MainActivity.isWaiting);
+                        Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1]);
                         if(declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1] != 0)
                         {
                             if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] == 0){
@@ -65,6 +73,14 @@ public class LTDistributed_decoder {
                             }
                             decode = 1;
                         }
+                        else {
+                            if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] != 0){
+                                int position = ((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]);
+                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", Arrays.copyOfRange(declaration.decVal, position, position + declaration.messageSize[declaration.currentLayer]));
+                                packetData.setPosition(position);
+                                MainActivity.sendPacket(packetData);
+                            }
+                        }
                         if(decode == 1){
 
                             //computationStep++;
@@ -72,15 +88,20 @@ public class LTDistributed_decoder {
                             packetData = new PacketData("REQUEST_GLOBAL_DECVAL", String.valueOf(declaration.messageSize[declaration.currentLayer]).getBytes());
                             packetData.setPosition(((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]));
                             MainActivity.isWaiting = true;
+                            do {
+                                MainActivity.sendPacket(packetData);
+                                Log.v("LTDistributed", "send request global decval: " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
                             synchronized (MainActivity.waitingLock) {
-                                while (MainActivity.isWaiting) {
-                                    try {
-                                        MainActivity.waitingLock.wait();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
+//                                while (MainActivity.isWaiting) {
+                                try {
+                                    MainActivity.waitingLock.wait(5000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
+//                                }
                             }
+                            } while (MainActivity.isWaiting);
+                            Log.v("LTDistributed", "Request decval position = " + (declaration.PData_requireSrc[node_ID][r][s]-1));
                             System.arraycopy(declaration.decVal,((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]),tmp,0,declaration.messageSize[declaration.currentLayer]);
 
                             // Decode XOR
@@ -133,28 +154,42 @@ public class LTDistributed_decoder {
                             declaration.LocalWrite[node_ID]++;
                             declaration.GlobalTryWrite[node_ID]++;
                             PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(index - 1).getBytes());
-                            MainActivity.sendPacket(packetData);
                             MainActivity.isWaiting = true;
+                            do {
+                                MainActivity.sendPacket(packetData);
+                                Log.v("LTDistributed", "send request global record: " + (index - 1));
                             synchronized (MainActivity.waitingLock) {
-                                while (MainActivity.isWaiting) {
-                                    try {
-                                        MainActivity.waitingLock.wait();
-                                    } catch (InterruptedException ex) {
-                                        ex.printStackTrace();
-                                    }
+//                                while (MainActivity.isWaiting) {
+                                try {
+                                    MainActivity.waitingLock.wait(5000);
+                                } catch (InterruptedException ex) {
+                                    ex.printStackTrace();
                                 }
+//                                }
                             }
+                            } while (MainActivity.isWaiting);
+                            Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[index-1]);
                             if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
                                 packetData = new PacketData("UPDATE_GLOBAL_DECVAL", declaration.PData_codedData[node_ID][r]);
                                 packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
+                                MainActivity.sendPacket(packetData);
                                 System.arraycopy(declaration.PData_codedData[node_ID][r],0,declaration.decVal,((index - 1) * declaration.messageSize[declaration.currentLayer]),declaration.messageSize[declaration.currentLayer]);
                                 declaration.GlobalWrite[node_ID]++;
                             }
+                            else {
+                                if (declaration.selfDecodedSymbolsRecord[node_ID][index - 1] != 0) {
+                                    int position = ((index - 1) * declaration.messageSize[declaration.currentLayer]);
+                                    packetData = new PacketData("UPDATE_GLOBAL_DECVAL", Arrays.copyOfRange(declaration.decVal, position, position + declaration.messageSize[declaration.currentLayer]));
+                                    packetData.setPosition(position);
+                                    MainActivity.sendPacket(packetData);
+                                }
+                            }
+
                             declaration.globalDecodedSymbolsRecord[index - 1] = rStep;
                             declaration.sDecodedSymbols[node_ID]++;
-                            packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(rStep).getBytes());
-                            packetData.setPosition(index - 1);
-                            MainActivity.sendPacket(packetData);
+//                            packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(rStep).getBytes());
+//                            packetData.setPosition(index - 1);
+//                            MainActivity.sendPacket(packetData);
 
                             //sendRecordCount++;
 

@@ -1,5 +1,6 @@
 package vc.wifilt;
 import android.content.Context;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,7 +50,7 @@ public class readEncodedData {
                 //String headTemp = convertStreamToString(myContext.getAssets().open(HeaderInfo));
                 //InputStream fi =myContext.getAssets().open(Data);
                 fi.read(decTemp);
-                System.out.println(decTemp);
+//                System.out.println(decTemp);
 
                 String headTemp = readFile(HeaderInfo);
                 String[] AfterSplit = headTemp.split("_");
@@ -106,12 +107,14 @@ public class readEncodedData {
                         declaration.globalDecodedSymbolsRecord[index - 1] = 1;
                         PacketData packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(1).getBytes());
                         packetData.setPosition(index - 1);
+                        Log.v("Enc","position : " + (index-1) );
                         MainActivity.sendPacket(packetData);
                         System.out.print(index);
                         System.out.println(" is degree1 !");
                         declaration.sDecodedSymbols[node_ID]++;
                         //sendRecordCount++;
                         decTime++;
+//                        while (true) {}
                     }
 
                 }

@@ -65,32 +65,56 @@ public class AfterP2P {
 
 
         Log.v("AfterP2P", "start thread");
+        while (true) {
+
+
+            //System.out.println("Hello");
+            System.out.print("Hello");
+            System.out.println(node_ID);
+
+
+            if (declaration.globalFinish == 0) {
+                LTDistributed_decoder.main(declaration.elementNum[node_ID], declaration.rippleStep[node_ID], declaration.currentLayer, node_ID);
+                if(declaration.RippleSize[node_ID]>0 && declaration.sDecodedSymbols[node_ID] < declaration.srcSymbols[declaration.currentLayer]){
+                    declaration.rippleStep[node_ID]++;
+                }
+
+
+
+            }
+            else {
+                System.out.println("收工!");
+                break;
+            }
+        }
         //for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
-        PrintHello.set(node_ID);
-        Thread t1 = new PrintHello(); // 產生Thread物件
-        Log.v("thread", "printhello: " + t1.getId());
-        t1.start(); // 開始執行t.run()
+//        PrintHello.set(node_ID);
+//        Thread t1 = new PrintHello(); // 產生Thread物件
+//        Log.v("thread", "printhello: " + t1.getId());
+//        t1.start(); // 開始執行t.run()
+
         //}
 
-        Thread t2 = new FinishLayer(); // 產生Thread物件
-        Log.v("thread", "finishlayer: " + t2.getId());
-        t2.start(); // 開始執行t.run()
-        try {
-            t2.join();
+//        Thread t2 = new FinishLayer(); // 產生Thread物件
+//        Log.v("thread", "finishlayer: " + t2.getId());
+//        t2.start(); // 開始執行t.run()
 
-        } catch (InterruptedException e) {
+//        try {
+//            t2.join();
+//
+//        } catch (InterruptedException e) {
             // TODO Auto-generated catch block
 
             //		t2.interrupt();
             //		t1.interrupt();
-        }
+//        }
 
         String index = Integer.toString(declaration.currentLayer);
-        String Outputfilename=declaration.Output_FileName+index+declaration.Output_Extension;
+        String Outputfilename=MainActivity.MainContext.getExternalFilesDir(null).getAbsolutePath() +declaration.Output_FileName+index+declaration.Output_Extension;
         System.out.println(Outputfilename);
         //System.out.println(declaration.rippleStep[0]);
         //System.out.println(declaration.rippleStep[1]);
-        System.out.println(declaration.decVal);
+//        System.out.println(declaration.decVal);
 
 
         try{
