@@ -9,6 +9,8 @@ import java.util.Arrays;
  * Created by melissa on 2016/1/4.
  */
 public class LTDistributed_decoder {
+    private static int sPacketTimeout = 1000;
+
     public static void main(int eNum, int rStep, int layer, int node_ID) {
         int n = 0;
         while (n < declaration.srcSymbols[declaration.currentLayer])
@@ -50,20 +52,25 @@ public class LTDistributed_decoder {
                             decode = 1;
                         }
                         PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(declaration.PData_requireSrc[node_ID][r][s]-1).getBytes());
-                        MainActivity.isWaiting = true;
+                        packetData.setDes(MainActivity.mOwnerAddress);
+//                        MainActivity.isWaiting = true;
                         do {
                             MainActivity.sendPacket(packetData);
                             Log.v("LTDistributed", "send request global record: " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
-                        synchronized (MainActivity.waitingLock) {
-//                            while (MainActivity.isWaiting) {
-                            try {
-                                MainActivity.waitingLock.wait(5000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+                            synchronized (MainActivity.waitingLock) {
+    //                            while (MainActivity.isWaiting) {
+                                try {
+                                    MainActivity.waitingLock.wait(sPacketTimeout);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+    //                            }
                             }
-//                            }
-                        }
-                        } while (MainActivity.isWaiting);
+                            Log.v("LTDistributed", "isRecordUpdate=" + declaration.isRecordUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)]);
+                            Log.v("LTDistributed", "position = " + (declaration.PData_requireSrc[node_ID][r][s]-1));
+                        } while (!declaration.isRecordUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)]);
+                        declaration.isRecordUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)] = false;
+
                         Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1]);
                         if(declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1] != 0)
                         {
@@ -73,34 +80,35 @@ public class LTDistributed_decoder {
                             }
                             decode = 1;
                         }
-                        else {
-                            if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] != 0){
-                                int position = ((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]);
-                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", Arrays.copyOfRange(declaration.decVal, position, position + declaration.messageSize[declaration.currentLayer]));
-                                packetData.setPosition(position);
-                                MainActivity.sendPacket(packetData);
-                            }
-                        }
+//                        else {
+//                            if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] != 0){
+//                                int position = ((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]);
+//                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", Arrays.copyOfRange(declaration.decVal, position, position + declaration.messageSize[declaration.currentLayer]));
+//                                packetData.setPosition(position);
+//                                MainActivity.sendPacket(packetData);
+//                            }
+//                        }
                         if(decode == 1){
 
                             //computationStep++;
 //
                             packetData = new PacketData("REQUEST_GLOBAL_DECVAL", String.valueOf(declaration.messageSize[declaration.currentLayer]).getBytes());
                             packetData.setPosition(((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]));
-                            MainActivity.isWaiting = true;
+                            packetData.setDes(MainActivity.mOwnerAddress);
+//                            MainActivity.isWaiting = true;
                             do {
                                 MainActivity.sendPacket(packetData);
                                 Log.v("LTDistributed", "send request global decval: " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
-                            synchronized (MainActivity.waitingLock) {
-//                                while (MainActivity.isWaiting) {
-                                try {
-                                    MainActivity.waitingLock.wait(5000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                                synchronized (MainActivity.waitingLock) {
+    //                                while (MainActivity.isWaiting) {
+                                    try {
+                                        MainActivity.waitingLock.wait(sPacketTimeout);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+    //                                }
                                 }
-//                                }
-                            }
-                            } while (MainActivity.isWaiting);
+                            } while (!declaration.isDecvalUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)]);
                             Log.v("LTDistributed", "Request decval position = " + (declaration.PData_requireSrc[node_ID][r][s]-1));
                             System.arraycopy(declaration.decVal,((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]),tmp,0,declaration.messageSize[declaration.currentLayer]);
 
@@ -154,36 +162,49 @@ public class LTDistributed_decoder {
                             declaration.LocalWrite[node_ID]++;
                             declaration.GlobalTryWrite[node_ID]++;
                             PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(index - 1).getBytes());
-                            MainActivity.isWaiting = true;
+                            packetData.setDes(MainActivity.mOwnerAddress);
+//                            MainActivity.isWaiting = true;
                             do {
                                 MainActivity.sendPacket(packetData);
                                 Log.v("LTDistributed", "send request global record: " + (index - 1));
                             synchronized (MainActivity.waitingLock) {
 //                                while (MainActivity.isWaiting) {
                                 try {
-                                    MainActivity.waitingLock.wait(5000);
+                                    MainActivity.waitingLock.wait(sPacketTimeout);
                                 } catch (InterruptedException ex) {
                                     ex.printStackTrace();
                                 }
 //                                }
                             }
-                            } while (MainActivity.isWaiting);
+                            } while (!declaration.isRecordUpdate[(index - 1)]);
+                            declaration.isRecordUpdate[index-1] = false;
+
                             Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[index-1]);
                             if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
                                 packetData = new PacketData("UPDATE_GLOBAL_DECVAL", declaration.PData_codedData[node_ID][r]);
                                 packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
-                                MainActivity.sendPacket(packetData);
+                                packetData.setDes(MainActivity.mOwnerAddress);
+                                do {
+                                    MainActivity.sendPacket(packetData);
+                                    synchronized (MainActivity.waitingLock) {
+                                        try {
+                                            MainActivity.waitingLock.wait(sPacketTimeout);
+                                        } catch (InterruptedException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+                                } while (!declaration.isGlobalDecvalUpdate[(index - 1)]);
                                 System.arraycopy(declaration.PData_codedData[node_ID][r],0,declaration.decVal,((index - 1) * declaration.messageSize[declaration.currentLayer]),declaration.messageSize[declaration.currentLayer]);
                                 declaration.GlobalWrite[node_ID]++;
                             }
-                            else {
-                                if (declaration.selfDecodedSymbolsRecord[node_ID][index - 1] != 0) {
-                                    int position = ((index - 1) * declaration.messageSize[declaration.currentLayer]);
-                                    packetData = new PacketData("UPDATE_GLOBAL_DECVAL", Arrays.copyOfRange(declaration.decVal, position, position + declaration.messageSize[declaration.currentLayer]));
-                                    packetData.setPosition(position);
-                                    MainActivity.sendPacket(packetData);
-                                }
-                            }
+//                            else {
+//                                if (declaration.selfDecodedSymbolsRecord[node_ID][index - 1] != 0) {
+//                                    int position = ((index - 1) * declaration.messageSize[declaration.currentLayer]);
+//                                    packetData = new PacketData("UPDATE_GLOBAL_DECVAL", Arrays.copyOfRange(declaration.decVal, position, position + declaration.messageSize[declaration.currentLayer]));
+//                                    packetData.setPosition(position);
+//                                    MainActivity.sendPacket(packetData);
+//                                }
+//                            }
 
                             declaration.globalDecodedSymbolsRecord[index - 1] = rStep;
                             declaration.sDecodedSymbols[node_ID]++;

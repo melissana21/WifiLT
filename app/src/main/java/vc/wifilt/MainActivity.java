@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     private String mGroupOwnerIP;
     private static String mBroadcastAddress;
     protected static boolean sIsGroupOwner = false;
+    protected static String mOwnerAddress;
     protected static String mMacAddress;
     private byte[] mHeaderInfo;
     private byte[] mData;
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         mChannel = mManager.initialize(this, getMainLooper(), null);
 
         MainContext = getApplicationContext();
-        executorService = Executors.newFixedThreadPool(2);
+        executorService = Executors.newCachedThreadPool();
 
         Log.v(TAG, "path: " + getExternalFilesDir(null).getAbsolutePath());
 
@@ -200,6 +201,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                         FinishLayer finishLayer = new FinishLayer();
                         MainActivity.executorService.submit(finishLayer);
 //                        AfterP2P.main(0);  //////  Main
+                    } else {
+                        sendPacket(new PacketData("OWNER_ADDRESS", mMacAddress.getBytes()));
                     }
 //                    stopService();
                 }
@@ -348,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                             .registerReceiver(new BroadcastReceiver() {
                                 @Override
                                 public void onReceive(Context context, Intent intent) {
-                                    Log.v(TAG, "submit packet");
+//                                    Log.v(TAG, "submit packet");
                                     executorService.submit(new PacketProcessingService(intent));
 //                                    Gson gson = new Gson();
 //                                    String message = intent.getStringExtra("EXTRA_DATA");

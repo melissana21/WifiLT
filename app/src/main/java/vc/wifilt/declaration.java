@@ -42,6 +42,11 @@ public class declaration {
     static public byte[][][] PData_codedData;
     static public int PData_seed[][];
 
+    static boolean[] isRecordUpdate;
+    static boolean[] isDecvalUpdate;
+    static boolean[] isGlobalDecvalUpdate;
+
+
 
 
 

@@ -8,6 +8,8 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.io.OptionalDataException;
 import java.io.Serializable;
@@ -85,6 +87,18 @@ class ServerThread extends Thread {
                 mServerSocket.receive(packet);
                 String clientIP = packet.getAddress().toString();
                 String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
+
+                Gson gson = new Gson();
+                PacketData packetData = gson.fromJson(data, PacketData.class);
+                if (packetData.getType().equals("OWNER_ADDRESS")) {
+                    MainActivity.mOwnerAddress = new String(packetData.getData());
+                    Log.v(ServerSocketService.TAG, "owner address: " + MainActivity.mOwnerAddress);
+                    continue;
+                }
+                if (!packetData.getDes().equals(MainActivity.mMacAddress)) {
+                    continue;
+                }
+
 /*                Socket socket = mServerSocket.accept();
                 ObjectInputStream objectInputStream =
                         new ObjectInputStream(socket.getInputStream());
@@ -92,8 +106,8 @@ class ServerThread extends Thread {
                 String clientIP = socket.getInetAddress().getHostAddress();
 *///                Log.d(ServerSocketService.TAG, "client ip address: " + clientIP);
                 Intent intent = new Intent("WIFI_DIRECT_SOCKET");
-                intent.putExtra("EXTRA_DATA", data);
-                intent.putExtra("EXTRA_IP",clientIP);
+                intent.putExtra("EXTRA_DATA", packetData);
+//                intent.putExtra("EXTRA_IP",clientIP);
 
 //                Log.d(ServerSocketService.TAG, "Socket accept: " + data);
 //                Log.v(ServerSocketService.TAG, "string: " + data.toString());

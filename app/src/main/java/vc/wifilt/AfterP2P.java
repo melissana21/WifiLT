@@ -44,6 +44,11 @@ public class AfterP2P {
         declaration.decRecord = new int[declaration.nodeNum][declaration.srcSymbols[declaration.currentLayer]];//init=0
         declaration.selfDecodedSymbolsRecord = new int[declaration.nodeNum][declaration.srcSymbols[declaration.currentLayer]];//init=0
 
+        declaration.isRecordUpdate = new boolean[declaration.srcSymbols[declaration.currentLayer]];
+        declaration.isDecvalUpdate = new boolean[declaration.srcSymbols[declaration.currentLayer]];
+        declaration.isGlobalDecvalUpdate = new boolean[declaration.srcSymbols[declaration.currentLayer]];
+
+
 
         declaration.PData_currentDegree= new int[declaration.nodeNum][declaration.EncPacketNum[declaration.currentLayer]]; //宣告二維陣列
         declaration.PData_originalDegree= new int[declaration.nodeNum][declaration.EncPacketNum[declaration.currentLayer]]; //宣告二維陣列
