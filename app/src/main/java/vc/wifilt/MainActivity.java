@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -26,10 +27,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Toast;
-
-import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,8 +38,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
     private SwitchCompat mServiceSwitch;
+    private CheckBox mOwnerCheckBox;
     private final IntentFilter mIntentFilter = new IntentFilter();
     protected static List<WifiP2pDevice> sPeers = new ArrayList<>();
     WifiP2pManager mManager;
@@ -117,7 +121,28 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.v(TAG, "Read: " + new String(mHeaderInfo));
+//        Log.v(TAG, "Read: " + new String(mHeaderInfo));
+
+
+        mBroadcastAddress = getBroadcastAddress(wifiIpAddress(this));
+        mMacAddress = getMacAddress(this);
+        int node_ID = 0;
+        //// set node_ID(0,1)  cache : -1(owner)
+        declaration.messageSize = new int[3];
+        declaration.srcSymbols = new int[3];
+
+        declaration.messageSize[declaration.currentLayer] = 268;
+        declaration.srcSymbols[declaration.currentLayer] = 1000;
+        declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
+        declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
+        MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
+        LocalBroadcastManager.getInstance(MainActivity.this)
+                .registerReceiver(new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        executorService.submit(new PacketProcessingService(intent));
+                    }
+                }, new IntentFilter("WIFI_DIRECT_SOCKET"));
 //        Log.v(TAG, "Data: " + mData);
     }
 
@@ -170,20 +195,20 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     switchItem.setTitle(R.string.stop_service_title);
-                    Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
-
-                    mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-                        @Override
-                        public void onSuccess() {
-                            Toast.makeText(MainActivity.this, "Discovery initiation is successful", Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onFailure(int reason) {
-                            Toast.makeText(MainActivity.this, "Discovery initiation fails", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
+//                    Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
+//
+//                    mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+//                        @Override
+//                        public void onSuccess() {
+//                            Toast.makeText(MainActivity.this, "Discovery initiation is successful", Toast.LENGTH_SHORT).show();
+//                        }
+//
+//                        @Override
+//                        public void onFailure(int reason) {
+//                            Toast.makeText(MainActivity.this, "Discovery initiation fails", Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//                } else {
                     switchItem.setTitle(R.string.start_service_title);
                     if (!sIsGroupOwner) {
                         executorService.submit(new Runnable() {
@@ -206,6 +231,20 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     }
 //                    stopService();
                 }
+            }
+        });
+        final MenuItem checkBoxItem = menu.findItem(R.id.setOwner);
+        mOwnerCheckBox = (CheckBox) MenuItemCompat.getActionView(checkBoxItem)
+                .findViewById(R.id.ownerCheckBox);
+        mOwnerCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    sIsGroupOwner = true;
+                } else {
+                    sIsGroupOwner = false;
+                }
+                Toast.makeText(MainActivity.this, "isGroupOwner: " + sIsGroupOwner, Toast.LENGTH_SHORT).show();
             }
         });
         return super.onCreateOptionsMenu(menu);
@@ -474,6 +513,37 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         }
         String[] ip = groupOwnerIP.split("\\.");
         return ip[0] + "." + ip[1] + "." + ip[2] + ".255";
+    }
+
+    protected String wifiIpAddress(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
+        int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
+
+        // Convert little-endian to big-endianif needed
+        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            ipAddress = Integer.reverseBytes(ipAddress);
+        }
+
+        byte[] ipByteArray = BigInteger.valueOf(ipAddress).toByteArray();
+
+        String ipAddressString;
+        try {
+            ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
+        } catch (UnknownHostException ex) {
+            Log.e("WIFIIP", "Unable to get host address.");
+            ipAddressString = null;
+        }
+
+        return ipAddressString;
+    }
+
+    public String getMacAddress(Context context) {
+        WifiManager wimanager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        String macAddress = wimanager.getConnectionInfo().getMacAddress();
+        if (macAddress == null) {
+            macAddress = "Device don't have mac address or wi-fi is disabled";
+        }
+        return macAddress;
     }
 
     public static String convertStreamToString(InputStream is) throws Exception {

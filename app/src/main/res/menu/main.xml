@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item android:id="@+id/setOwner"
+          android:title="Set owner"
+          app:showAsAction="always"
+          app:actionLayout="@layout/owner_checkbox_layout" />
+
     <item android:id="@+id/toggleService"
           android:title="@string/start_service_title"
           app:showAsAction="always"
