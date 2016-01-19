@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopService();
+//        stopService();
     }
 
     @Override
