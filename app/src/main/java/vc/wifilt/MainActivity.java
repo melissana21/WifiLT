@@ -39,7 +39,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -73,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static final Object waitingLock = new Object();
     protected static boolean isWaiting;
     protected static ExecutorService executorService;
+
+    protected static DatagramSocket sDatagramSocket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         declaration.srcSymbols[declaration.currentLayer] = 1000;
         declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
         declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
-        MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
+        startService(new Intent(MainActivity.this, ServerSocketService.class));
         LocalBroadcastManager.getInstance(MainActivity.this)
                 .registerReceiver(new BroadcastReceiver() {
                     @Override
@@ -180,6 +184,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        sDatagramSocket.close();
+        stopService(new Intent(MainActivity.this, ServerSocketService.class));
+        executorService.shutdownNow();
 //        stopService();
     }
 
@@ -210,6 +217,13 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 //                    });
 //                } else {
                     switchItem.setTitle(R.string.start_service_title);
+                    try {
+                        sDatagramSocket = new DatagramSocket();
+                        sDatagramSocket.setBroadcast(true);
+                        sDatagramSocket.setReuseAddress(true);
+                    } catch (SocketException e) {
+                        e.printStackTrace();
+                    }
                     if (!sIsGroupOwner) {
                         executorService.submit(new Runnable() {
                             @Override

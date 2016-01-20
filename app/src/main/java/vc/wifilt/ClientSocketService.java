@@ -2,14 +2,12 @@ package vc.wifilt;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.util.Log;
 
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 /**
@@ -44,10 +42,11 @@ public class ClientSocketService extends IntentService {
                 DatagramPacket packet = new DatagramPacket(message, message.length);
                 packet.setAddress(InetAddress.getByName(ip));
                 packet.setPort(port);
-                DatagramSocket socket = new DatagramSocket();
-                socket.setBroadcast(true);
-                socket.setReuseAddress(true);
-                socket.send(packet);
+//                DatagramSocket socket = new DatagramSocket();
+//                socket.setBroadcast(true);
+//                socket.setReuseAddress(true);
+//                socket.send(packet);
+                MainActivity.sDatagramSocket.send(packet);
 
 //                Log.d(TAG, "ClientSocket start");
 //                ObjectOutputStream objectOutputStream =
