@@ -3,6 +3,7 @@ package vc.wifilt;
 
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -125,6 +126,19 @@ public class LTDistributed_decoder {
                             //System.out.println(declaration.PData_currentDegree[node_ID][r]);
 
                             declaration.PData_requireSrc[node_ID][r][s] = -1;
+
+//                            System.out.print(r);
+//                            System.out.print("current degree = ");
+//                            System.out.println(declaration.PData_currentDegree[node_ID][r]);
+
+                            String output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
+                            System.out.print(output);
+                            try {
+                                MainActivity.sFileOutputStream.write(output.getBytes());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
 
                             break;
                         }

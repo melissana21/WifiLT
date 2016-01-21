@@ -34,6 +34,8 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static boolean isWaiting;
     protected static ExecutorService executorService;
 
+    protected static FileOutputStream sFileOutputStream;
+
     protected static DatagramSocket sDatagramSocket;
 
     @Override
@@ -107,6 +111,12 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
         MainContext = getApplicationContext();
         executorService = Executors.newCachedThreadPool();
+
+        try {
+            sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "degree.txt");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         Log.v(TAG, "path: " + getExternalFilesDir(null).getAbsolutePath());
 
@@ -184,6 +194,11 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        try {
+            sFileOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         sDatagramSocket.close();
         stopService(new Intent(MainActivity.this, ServerSocketService.class));
         executorService.shutdownNow();
