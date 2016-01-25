@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         executorService = Executors.newCachedThreadPool();
 
         try {
-            sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "degree.txt");
+            sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -600,6 +600,17 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         //Make sure you close all streams.
         fin.close();
         return ret;
+    }
+
+    protected static int[] convertStringToIntArr(String string) { //Note the [] after the String.
+        // 將剛剛輸出之 array string 先作去頭去尾處理
+        // 並用 split 來分開各個項目
+        String[] items = string.replaceAll("\\[", "").replaceAll("\\]", "").split(",");
+        int[] results = new int[items.length];
+        for (int i = 0; i < items.length; i++) {
+            results[i] = Integer.parseInt(items[i].trim());
+        }
+        return results;
     }
 
     protected static void sendPacket(PacketData data) {

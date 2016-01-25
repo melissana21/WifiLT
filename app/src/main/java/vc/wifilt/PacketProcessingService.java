@@ -41,7 +41,8 @@ public class PacketProcessingService extends Thread {
                     index = Integer.parseInt(new String(packetData.getData()));
                     returnData =
                             new PacketData("ANSWER_GLOBAL_RECORD",
-                                    String.valueOf(declaration.globalDecodedSymbolsRecord[index]).getBytes());
+                                    Arrays.toString(declaration.globalDecodedSymbolsRecord).getBytes());
+//                                    String.valueOf(declaration.globalDecodedSymbolsRecord[index]).getBytes());
                     returnData.setPosition(index);
                     returnData.setDes(packetData.getOri());
                     MainActivity.sendPacket(returnData);
@@ -85,12 +86,14 @@ public class PacketProcessingService extends Thread {
                         return;
                     }
                     Log.v(TAG, "receive answer global record: " + packetData.getPosition());
-                    int data = Integer.parseInt(new String(packetData.getData()));
-                    declaration.globalDecodedSymbolsRecord[packetData.getPosition()] = data;
-                    Log.v(TAG, "position = " + packetData.getPosition());
-                    Log.v(TAG, "before: " +declaration.isRecordUpdate[packetData.getPosition()]);
+//                    int data = Integer.parseInt(new String(packetData.getData()));
+                    int[] data = MainActivity.convertStringToIntArr(new String(packetData.getData()));
+                    declaration.globalDecodedSymbolsRecord = data;
+//                    declaration.globalDecodedSymbolsRecord[packetData.getPosition()] = data;
+//                    Log.v(TAG, "position = " + packetData.getPosition());
+//                    Log.v(TAG, "before: " +declaration.isRecordUpdate[packetData.getPosition()]);
                     declaration.isRecordUpdate[packetData.getPosition()] = true;
-                    Log.v(TAG, "after: " +declaration.isRecordUpdate[packetData.getPosition()]);
+//                    Log.v(TAG, "after: " +declaration.isRecordUpdate[packetData.getPosition()]);
 
                     synchronized (MainActivity.waitingLock) {
                         Log.v(TAG, "unlock waiting");

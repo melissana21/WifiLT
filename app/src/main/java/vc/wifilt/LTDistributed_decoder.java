@@ -28,6 +28,26 @@ public class LTDistributed_decoder {
         //printf("in Distributed_BP\n");
 //        System.out.println("in Distributed_BP, symbolnum = "+ symbolNum);
 
+        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(0).getBytes());
+        packetData.setDes(MainActivity.mOwnerAddress);
+//                        MainActivity.isWaiting = true;
+        do {
+            MainActivity.sendPacket(packetData);
+            Log.v("LTDistributed", "send request global record");
+            synchronized (MainActivity.waitingLock) {
+                //                            while (MainActivity.isWaiting) {
+                try {
+                    MainActivity.waitingLock.wait(sPacketTimeout);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                //                            }
+            }
+            Log.v("LTDistributed", "isRecordUpdate=" + declaration.isRecordUpdate[0]);
+//            Log.v("LTDistributed", "position = " + (declaration.PData_requireSrc[node_ID][r][s]-1));
+        } while (!declaration.isRecordUpdate[0]);
+        declaration.isRecordUpdate[0] = false;
+
         for(int r = 0 ; r < dTime ; r++)
         {
 
@@ -52,7 +72,7 @@ public class LTDistributed_decoder {
                             declaration.LocalRead[node_ID]++;
                             decode = 1;
                         }
-                        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(declaration.PData_requireSrc[node_ID][r][s]-1).getBytes());
+/*                        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(declaration.PData_requireSrc[node_ID][r][s]-1).getBytes());
                         packetData.setDes(MainActivity.mOwnerAddress);
 //                        MainActivity.isWaiting = true;
                         do {
@@ -72,7 +92,7 @@ public class LTDistributed_decoder {
                         } while (!declaration.isRecordUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)]);
                         declaration.isRecordUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)] = false;
 
-                        Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1]);
+                        Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1]);*/
                         if(declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1] != 0)
                         {
                             if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] == 0){
@@ -175,7 +195,7 @@ public class LTDistributed_decoder {
                             declaration.decRecord[node_ID][index - 1] = rStep;
                             declaration.LocalWrite[node_ID]++;
                             declaration.GlobalTryWrite[node_ID]++;
-                            PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(index - 1).getBytes());
+/*                            PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(index - 1).getBytes());
                             packetData.setDes(MainActivity.mOwnerAddress);
 //                            MainActivity.isWaiting = true;
                             do {
@@ -193,7 +213,7 @@ public class LTDistributed_decoder {
                             } while (!declaration.isRecordUpdate[(index - 1)]);
                             declaration.isRecordUpdate[index-1] = false;
 
-                            Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[index-1]);
+                            Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[index-1]);*/
                             if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
                                 packetData = new PacketData("UPDATE_GLOBAL_DECVAL", declaration.PData_codedData[node_ID][r]);
                                 packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
