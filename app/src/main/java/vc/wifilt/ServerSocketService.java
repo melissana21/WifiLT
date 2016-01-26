@@ -83,7 +83,7 @@ class ServerThread extends Thread {
                     return;
                 }
 
-                DatagramPacket packet = new DatagramPacket(new byte[81920], 81920);
+                DatagramPacket packet = new DatagramPacket(new byte[4096], 4096);
                 mServerSocket.receive(packet);
                 String clientIP = packet.getAddress().toString();
                 String data = new String(packet.getData(), packet.getOffset(), packet.getLength());

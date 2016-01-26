@@ -41,7 +41,7 @@ public class PacketProcessingService extends Thread {
                     index = Integer.parseInt(new String(packetData.getData()));
                     returnData =
                             new PacketData("ANSWER_GLOBAL_RECORD",
-                                    Arrays.toString(declaration.globalDecodedSymbolsRecord).getBytes());
+                                    MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());
 //                                    String.valueOf(declaration.globalDecodedSymbolsRecord[index]).getBytes());
                     returnData.setPosition(index);
                     returnData.setDes(packetData.getOri());
@@ -85,9 +85,10 @@ public class PacketProcessingService extends Thread {
                     if (!packetData.getDes().equals(MainActivity.mMacAddress) || declaration.isRecordUpdate[packetData.getPosition()]) {
                         return;
                     }
+//                    Log.v("packet delay", "process: " + System.currentTimeMillis());
                     Log.v(TAG, "receive answer global record: " + packetData.getPosition());
 //                    int data = Integer.parseInt(new String(packetData.getData()));
-                    int[] data = MainActivity.convertStringToIntArr(new String(packetData.getData()));
+                    int[] data = MainActivity.convertStringToIntArray(new String(packetData.getData()));
                     declaration.globalDecodedSymbolsRecord = data;
 //                    declaration.globalDecodedSymbolsRecord[packetData.getPosition()] = data;
 //                    Log.v(TAG, "position = " + packetData.getPosition());

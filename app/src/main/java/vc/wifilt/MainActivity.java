@@ -594,15 +594,20 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         return ret;
     }
 
-    protected static int[] convertStringToIntArr(String string) { //Note the [] after the String.
-        // 將剛剛輸出之 array string 先作去頭去尾處理
-        // 並用 split 來分開各個項目
-        String[] items = string.replaceAll("\\[", "").replaceAll("\\]", "").split(",");
-        int[] results = new int[items.length];
-        for (int i = 0; i < items.length; i++) {
-            results[i] = Integer.parseInt(items[i].trim());
+    protected static String convertIntArrayToString(int[] array) {
+        String string = new String();
+        for (int i : array) {
+            string += i;
         }
-        return results;
+        return string;
+    }
+
+    protected static int[] convertStringToIntArray(String string) {
+        int[] array = new int[string.length()];
+        for (int i = 0; i < string.length(); i++) {
+            array[i] = Character.getNumericValue(string.charAt(i));
+        }
+        return array;
     }
 
     protected static void sendPacket(PacketData data) {

@@ -35,6 +35,7 @@ public class LTDistributed_decoder {
 //                        MainActivity.isWaiting = true;
             do {
                 MainActivity.sendPacket(packetData);
+//                Log.v("packet delay", "request: " + System.currentTimeMillis());
                 Log.v("LTDistributed", "send request global record");
                 synchronized (MainActivity.waitingLock) {
                     //                            while (MainActivity.isWaiting) {

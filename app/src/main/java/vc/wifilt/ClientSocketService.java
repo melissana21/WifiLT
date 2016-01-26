@@ -2,6 +2,7 @@ package vc.wifilt;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -40,6 +41,7 @@ public class ClientSocketService extends IntentService {
 //                Log.v(TAG, "byte: " + message);
 //                Log.v(TAG, "byte to string: " + new String(message));
                 DatagramPacket packet = new DatagramPacket(message, message.length);
+//                Log.v("length", "message length: " + message.length);
                 packet.setAddress(InetAddress.getByName(ip));
                 packet.setPort(port);
 //                DatagramSocket socket = new DatagramSocket();
