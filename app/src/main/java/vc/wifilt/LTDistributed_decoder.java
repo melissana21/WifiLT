@@ -25,29 +25,31 @@ public class LTDistributed_decoder {
     }
 
     public static void Distributed_BP (int symbolNum, int dTime, int rStep, int layer, int node_ID )	{
+        PacketData packetData;
         //printf("in Distributed_BP\n");
 //        System.out.println("in Distributed_BP, symbolnum = "+ symbolNum);
 
-        PacketData packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(0).getBytes());
-        packetData.setDes(MainActivity.mOwnerAddress);
+        if (!MainActivity.sIsGroupOwner) {
+            packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(0).getBytes());
+            packetData.setDes(MainActivity.mOwnerAddress);
 //                        MainActivity.isWaiting = true;
-        do {
-            MainActivity.sendPacket(packetData);
-            Log.v("LTDistributed", "send request global record");
-            synchronized (MainActivity.waitingLock) {
-                //                            while (MainActivity.isWaiting) {
-                try {
-                    MainActivity.waitingLock.wait(sPacketTimeout);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            do {
+                MainActivity.sendPacket(packetData);
+                Log.v("LTDistributed", "send request global record");
+                synchronized (MainActivity.waitingLock) {
+                    //                            while (MainActivity.isWaiting) {
+                    try {
+                        MainActivity.waitingLock.wait(sPacketTimeout);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    //                            }
                 }
-                //                            }
-            }
-            Log.v("LTDistributed", "isRecordUpdate=" + declaration.isRecordUpdate[0]);
+                Log.v("LTDistributed", "isRecordUpdate=" + declaration.isRecordUpdate[0]);
 //            Log.v("LTDistributed", "position = " + (declaration.PData_requireSrc[node_ID][r][s]-1));
-        } while (!declaration.isRecordUpdate[0]);
-        declaration.isRecordUpdate[0] = false;
-
+            } while (!declaration.isRecordUpdate[0]);
+            declaration.isRecordUpdate[0] = false;
+        }
         for(int r = 0 ; r < dTime ; r++)
         {
 
@@ -113,25 +115,28 @@ public class LTDistributed_decoder {
 
                             //computationStep++;
 //
-                            packetData = new PacketData("REQUEST_GLOBAL_DECVAL", String.valueOf(declaration.messageSize[declaration.currentLayer]).getBytes());
-                            packetData.setPosition(((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]));
-                            packetData.setDes(MainActivity.mOwnerAddress);
+                            if (!MainActivity.sIsGroupOwner) {
+                                packetData = new PacketData("REQUEST_GLOBAL_DECVAL", String.valueOf(declaration.messageSize[declaration.currentLayer]).getBytes());
+                                packetData.setPosition(((declaration.PData_requireSrc[node_ID][r][s] - 1) * declaration.messageSize[declaration.currentLayer]));
+                                packetData.setDes(MainActivity.mOwnerAddress);
 //                            MainActivity.isWaiting = true;
-                            do {
-                                MainActivity.sendPacket(packetData);
-                                Log.v("LTDistributed", "send request global decval: " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
-                                synchronized (MainActivity.waitingLock) {
-    //                                while (MainActivity.isWaiting) {
-                                    try {
-                                        MainActivity.waitingLock.wait(sPacketTimeout);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
+                                do {
+                                    MainActivity.sendPacket(packetData);
+                                    Log.v("LTDistributed", "send request global decval: " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
+                                    synchronized (MainActivity.waitingLock) {
+                                        //                                while (MainActivity.isWaiting) {
+                                        try {
+                                            MainActivity.waitingLock.wait(sPacketTimeout);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                        //                                }
                                     }
-    //                                }
                                 }
-                            } while (!declaration.isDecvalUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)]);
-                            Log.v("LTDistributed", "Request decval position = " + (declaration.PData_requireSrc[node_ID][r][s]-1));
-                            System.arraycopy(declaration.decVal,((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]),tmp,0,declaration.messageSize[declaration.currentLayer]);
+                                while (!declaration.isDecvalUpdate[(declaration.PData_requireSrc[node_ID][r][s] - 1)]);
+                                Log.v("LTDistributed", "Request decval position = " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
+                            }
+                                System.arraycopy(declaration.decVal, ((declaration.PData_requireSrc[node_ID][r][s] - 1) * declaration.messageSize[declaration.currentLayer]), tmp, 0, declaration.messageSize[declaration.currentLayer]);
 
                             // Decode XOR
                             for(int p = 0 ; p < declaration.messageSize[declaration.currentLayer] ; p++){
@@ -215,19 +220,21 @@ public class LTDistributed_decoder {
 
                             Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[index-1]);*/
                             if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
-                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", declaration.PData_codedData[node_ID][r]);
-                                packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
-                                packetData.setDes(MainActivity.mOwnerAddress);
-                                do {
-                                    MainActivity.sendPacket(packetData);
-                                    synchronized (MainActivity.waitingLock) {
-                                        try {
-                                            MainActivity.waitingLock.wait(sPacketTimeout);
-                                        } catch (InterruptedException e1) {
-                                            e1.printStackTrace();
+                                if (!MainActivity.sIsGroupOwner) {
+                                    packetData = new PacketData("UPDATE_GLOBAL_DECVAL", declaration.PData_codedData[node_ID][r]);
+                                    packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
+                                    packetData.setDes(MainActivity.mOwnerAddress);
+                                    do {
+                                        MainActivity.sendPacket(packetData);
+                                        synchronized (MainActivity.waitingLock) {
+                                            try {
+                                                MainActivity.waitingLock.wait(sPacketTimeout);
+                                            } catch (InterruptedException e1) {
+                                                e1.printStackTrace();
+                                            }
                                         }
-                                    }
-                                } while (!declaration.isGlobalDecvalUpdate[(index - 1)]);
+                                    } while (!declaration.isGlobalDecvalUpdate[(index - 1)]);
+                                }
                                 System.arraycopy(declaration.PData_codedData[node_ID][r],0,declaration.decVal,((index - 1) * declaration.messageSize[declaration.currentLayer]),declaration.messageSize[declaration.currentLayer]);
                                 declaration.GlobalWrite[node_ID]++;
                             }

@@ -17,6 +17,7 @@ public class readEncodedData {
     public static int main(int PacketNum, int layer, int node_ID, Context myContext) throws IOException {
 
 
+        PacketData packetData;
 
         int decTime = 0;
         int terminate = PacketNum;
@@ -95,10 +96,12 @@ public class readEncodedData {
                         declaration.GlobalTryWrite[node_ID]++;
                         if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
                             System.arraycopy(decTemp,0,declaration.decVal,((index - 1) * declaration.messageSize[declaration.currentLayer]),declaration.messageSize[declaration.currentLayer]);
-                            PacketData packetData = new PacketData("UPDATE_GLOBAL_DECVAL", decTemp);
-                            packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
-                            packetData.setDes(MainActivity.mOwnerAddress);
-                            MainActivity.sendPacket(packetData);
+                            if (!MainActivity.sIsGroupOwner) {
+                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", decTemp);
+                                packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
+                                packetData.setDes(MainActivity.mOwnerAddress);
+                                MainActivity.sendPacket(packetData);
+                            }
                             //System.out.println(declaration.decVal);
                             //(declaration.decVal + ((index - 1) * declaration.messageSize)), decTemp, declaration.messageSize);
                             declaration.GlobalWrite[node_ID]++;
@@ -106,11 +109,13 @@ public class readEncodedData {
 
 
                         declaration.globalDecodedSymbolsRecord[index - 1] = 1;
-                        PacketData packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(1).getBytes());
-                        packetData.setPosition(index - 1);
-                        packetData.setDes(MainActivity.mOwnerAddress);
-                        Log.v("Enc","position : " + (index-1) );
-                        MainActivity.sendPacket(packetData);
+                        if (!MainActivity.sIsGroupOwner) {
+                            packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(1).getBytes());
+                            packetData.setPosition(index - 1);
+                            packetData.setDes(MainActivity.mOwnerAddress);
+                            Log.v("Enc", "position : " + (index - 1));
+                            MainActivity.sendPacket(packetData);
+                        }
                         System.out.print(index);
                         System.out.println(" is degree1 !");
                         declaration.sDecodedSymbols[node_ID]++;

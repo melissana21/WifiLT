@@ -239,25 +239,17 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     } catch (SocketException e) {
                         e.printStackTrace();
                     }
-                    if (!sIsGroupOwner) {
+                    if (sIsGroupOwner) {
+                        sendPacket(new PacketData("OWNER_ADDRESS", mMacAddress.getBytes()));
+                    }
                         executorService.submit(new Runnable() {
                             @Override
                             public void run() {
                                 AfterP2P.main(0);
-
-//                                PrintHello printHello = new PrintHello();
-//                                printHello.set(0);
-//                                MainActivity.executorService.submit(printHello);
-
-
                             }
                         });
                         FinishLayer finishLayer = new FinishLayer();
                         MainActivity.executorService.submit(finishLayer);
-//                        AfterP2P.main(0);  //////  Main
-                    } else {
-                        sendPacket(new PacketData("OWNER_ADDRESS", mMacAddress.getBytes()));
-                    }
 //                    stopService();
                 }
             }
