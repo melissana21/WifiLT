@@ -29,6 +29,16 @@ public class LTDistributed_decoder {
         //printf("in Distributed_BP\n");
 //        System.out.println("in Distributed_BP, symbolnum = "+ symbolNum);
 
+        /*0127 UPDATE*/
+        declaration.requestcount ++;
+        String output = "global request record count = " + declaration.requestcount + "\n";
+        System.out.print(output);
+        try {
+            MainActivity.sFileOutputStream.write(output.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         if (!MainActivity.sIsGroupOwner) {
             packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(0).getBytes());
             packetData.setDes(MainActivity.mOwnerAddress);
@@ -53,8 +63,6 @@ public class LTDistributed_decoder {
         }
         for(int r = 0 ; r < dTime ; r++)
         {
-
-
             if(declaration.globalFinish == 1){
                 break;
             }
@@ -66,12 +74,24 @@ public class LTDistributed_decoder {
                 //System.out.print(r);
                 //System.out.print("originalDegree = ");
                 //System.out.println(declaration.PData_originalDegree[node_ID][r]);
+
+                /*  0127 UPDATE  */
+                int decodenumber = 0;
+                for(int s = 0 ; s < declaration.PData_originalDegree[node_ID][r]; s++){
+                    int index = declaration.PData_requireSrc[node_ID][r][s];
+                    if(index != -1)
+                        if(declaration.globalDecodedSymbolsRecord[index-1] != 0 ||declaration.selfDecodedSymbolsRecord[node_ID][index-1] != 0)
+                            decodenumber++;
+                }
+
+
                 for(int s = 0 ; s < declaration.PData_originalDegree[node_ID][r]; s++)
                 {
                     int decode = 0;
-                    if(declaration.PData_requireSrc[node_ID][r][s] != -1){
+                    int index = declaration.PData_requireSrc[node_ID][r][s];
+                    if(index != -1){
 
-                        if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] != 0){
+                        if(declaration.selfDecodedSymbolsRecord[node_ID][index-1] != 0){
                             declaration.LocalRead[node_ID]++;
                             decode = 1;
                         }
@@ -96,11 +116,11 @@ public class LTDistributed_decoder {
                         declaration.isRecordUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)] = false;
 
                         Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1]);*/
-                        if(declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1] != 0)
+                        if(declaration.globalDecodedSymbolsRecord[index-1] != 0)
                         {
-                            if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] == 0){
+                            if(declaration.selfDecodedSymbolsRecord[node_ID][index-1] == 0){
                                 declaration.GlobalRead[node_ID]++;
-                                declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] =1;
+                                declaration.selfDecodedSymbolsRecord[node_ID][index-1] =1;
                             }
                             decode = 1;
                         }
@@ -118,12 +138,12 @@ public class LTDistributed_decoder {
 //
                             if (!MainActivity.sIsGroupOwner) {
                                 packetData = new PacketData("REQUEST_GLOBAL_DECVAL", String.valueOf(declaration.messageSize[declaration.currentLayer]).getBytes());
-                                packetData.setPosition(((declaration.PData_requireSrc[node_ID][r][s] - 1) * declaration.messageSize[declaration.currentLayer]));
+                                packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
                                 packetData.setDes(MainActivity.mOwnerAddress);
 //                            MainActivity.isWaiting = true;
                                 do {
                                     MainActivity.sendPacket(packetData);
-                                    Log.v("LTDistributed", "send request global decval: " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
+                                    Log.v("LTDistributed", "send request global decval: " + (index - 1));
                                     synchronized (MainActivity.waitingLock) {
                                         //                                while (MainActivity.isWaiting) {
                                         try {
@@ -134,10 +154,10 @@ public class LTDistributed_decoder {
                                         //                                }
                                     }
                                 }
-                                while (!declaration.isDecvalUpdate[(declaration.PData_requireSrc[node_ID][r][s] - 1)]);
-                                Log.v("LTDistributed", "Request decval position = " + (declaration.PData_requireSrc[node_ID][r][s] - 1));
+                                while (!declaration.isDecvalUpdate[(index - 1)]);
+                                Log.v("LTDistributed", "Request decval position = " + (index - 1));
                             }
-                                System.arraycopy(declaration.decVal, ((declaration.PData_requireSrc[node_ID][r][s] - 1) * declaration.messageSize[declaration.currentLayer]), tmp, 0, declaration.messageSize[declaration.currentLayer]);
+                                System.arraycopy(declaration.decVal, ((index - 1) * declaration.messageSize[declaration.currentLayer]), tmp, 0, declaration.messageSize[declaration.currentLayer]);
 
                             // Decode XOR
                             for(int p = 0 ; p < declaration.messageSize[declaration.currentLayer] ; p++){
@@ -151,13 +171,13 @@ public class LTDistributed_decoder {
                             //System.out.print("current degree = ");
                             //System.out.println(declaration.PData_currentDegree[node_ID][r]);
 
-                            declaration.PData_requireSrc[node_ID][r][s] = -1;
+                            index = -1;
 
 //                            System.out.print(r);
 //                            System.out.print("current degree = ");
 //                            System.out.println(declaration.PData_currentDegree[node_ID][r]);
 
-                            String output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
+                            output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
                             System.out.print(output);
                             try {
                                 MainActivity.sFileOutputStream.write(output.getBytes());
@@ -165,8 +185,10 @@ public class LTDistributed_decoder {
                                 e.printStackTrace();
                             }
 
-
-                            break;
+                            /*  0127 UPDATE  */
+                            decodenumber--;
+                            if(decodenumber==0 || declaration.PData_currentDegree[node_ID][r] == 1)
+                                break;
                         }
 
                     }

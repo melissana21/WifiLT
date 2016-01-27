@@ -19,6 +19,8 @@ public class declaration {
 
     static byte[] decVal ;
 
+    static int requestcount=0;
+
 
     /*public static class PDATA{
     	private static int currentDegree;
