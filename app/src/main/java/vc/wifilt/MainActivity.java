@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static ExecutorService executorService;
 
     protected static FileOutputStream sFileOutputStream;
+    protected static FileOutputStream sRequestRecordDelayStream;
+    protected static FileOutputStream sRequestDecvalDelayStream;
+    protected static FileOutputStream sUpdateDecvalDelayStream;
 
     protected static DatagramSocket sDatagramSocket;
 
@@ -114,6 +117,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
         try {
             sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
+            sRequestRecordDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_record.txt");
+            sRequestDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_decval.txt");
+            sUpdateDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/update_decval.txt");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -196,6 +202,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         super.onDestroy();
         try {
             sFileOutputStream.close();
+            sRequestRecordDelayStream.close();
+            sRequestDecvalDelayStream.close();
+            sUpdateDecvalDelayStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

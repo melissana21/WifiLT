@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 
@@ -14,6 +15,8 @@ import java.util.Arrays;
 public class PacketProcessingService extends Thread {
     String TAG = "PacketProcessing";
     Intent mIntent;
+
+    String output;
 
     public PacketProcessingService(Intent intent) {
         mIntent = new Intent(intent);
@@ -85,6 +88,12 @@ public class PacketProcessingService extends Thread {
                     if (!packetData.getDes().equals(MainActivity.mMacAddress) || declaration.isRecordUpdate[packetData.getPosition()]) {
                         return;
                     }
+                    output = "receive: " + System.currentTimeMillis() + "\n";
+                    try {
+                        MainActivity.sRequestRecordDelayStream.write(output.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 //                    Log.v("packet delay", "process: " + System.currentTimeMillis());
                     Log.v(TAG, "receive answer global record: " + packetData.getPosition());
 //                    int data = Integer.parseInt(new String(packetData.getData()));
@@ -107,6 +116,12 @@ public class PacketProcessingService extends Thread {
                             || declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]) {
                         return;
                     }
+                    output = "receive: " + System.currentTimeMillis() + "\n";
+                    try {
+                        MainActivity.sRequestDecvalDelayStream.write(output.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     Log.v(TAG, "receive answer global decval: " + packetData.getPosition());
                     System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
                     declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])] = true;
@@ -119,6 +134,12 @@ public class PacketProcessingService extends Thread {
                     if (!packetData.getDes().equals(MainActivity.mMacAddress)
                             || declaration.isGlobalDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]) {
                         return;
+                    }
+                    output = "receive: " + System.currentTimeMillis() + "\n";
+                    try {
+                        MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                     declaration.isGlobalDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])] = true;
                     synchronized (MainActivity.waitingLock) {

@@ -44,6 +44,12 @@ public class LTDistributed_decoder {
             packetData.setDes(MainActivity.mOwnerAddress);
 //                        MainActivity.isWaiting = true;
             do {
+                output = "request: " + System.currentTimeMillis() + "\n";
+                try {
+                    MainActivity.sRequestRecordDelayStream.write(output.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 MainActivity.sendPacket(packetData);
 //                Log.v("packet delay", "request: " + System.currentTimeMillis());
                 Log.v("LTDistributed", "send request global record");
@@ -142,6 +148,12 @@ public class LTDistributed_decoder {
                                 packetData.setDes(MainActivity.mOwnerAddress);
 //                            MainActivity.isWaiting = true;
                                 do {
+                                    output = "request: " + System.currentTimeMillis() + "\n";
+                                    try {
+                                        MainActivity.sRequestDecvalDelayStream.write(output.getBytes());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     MainActivity.sendPacket(packetData);
                                     Log.v("LTDistributed", "send request global decval: " + (index - 1));
                                     synchronized (MainActivity.waitingLock) {
@@ -248,6 +260,12 @@ public class LTDistributed_decoder {
                                     packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
                                     packetData.setDes(MainActivity.mOwnerAddress);
                                     do {
+                                        output = "request: " + System.currentTimeMillis() + "\n";
+                                        try {
+                                            MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
+                                        } catch (IOException e1) {
+                                            e1.printStackTrace();
+                                        }
                                         MainActivity.sendPacket(packetData);
                                         synchronized (MainActivity.waitingLock) {
                                             try {
