@@ -3,6 +3,8 @@ package vc.wifilt;
 
 import android.util.Log;
 
+import java.io.IOException;
+
 /**
  * Created by melissa on 2016/1/4.
  */
@@ -67,9 +69,9 @@ public class LTDistributed_decoder {
         }
         for(int r = 0 ; r < dTime ; r++)
         {
-            if(declaration.globalFinish == 1){
-                break;
-            }
+//            if(declaration.globalFinish == 1){
+//                break;
+//            }
             if(declaration.PData_currentDegree[node_ID][r] > 1)
             {
 
@@ -192,13 +194,13 @@ public class LTDistributed_decoder {
 //                            System.out.print("current degree = ");
 //                            System.out.println(declaration.PData_currentDegree[node_ID][r]);
 
-//                            output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
-//                            System.out.print(output);
-//                            try {
-//                                MainActivity.sFileOutputStream.write(output.getBytes());
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
+                            output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
+                            System.out.print(output);
+                            try {
+                                MainActivity.sFileOutputStream.write(output.getBytes());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 
                             /*  0127 UPDATE  */
                             decodenumber--;
