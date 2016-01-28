@@ -101,8 +101,9 @@ public class readEncodedData {
                                 packetData = new PacketData("UPDATE_GLOBAL_DECVAL", decTemp);
                                 packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
                                 packetData.setDes(MainActivity.mOwnerAddress);
-                                output = "request: " + System.currentTimeMillis() + "\n";
-                                MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
+                                MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
+//                                output = "request: " + System.currentTimeMillis() + "\n";
+//                                MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
                                 MainActivity.sendPacket(packetData);
                             }
                             //System.out.println(declaration.decVal);

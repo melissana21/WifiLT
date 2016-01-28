@@ -88,7 +88,7 @@ public class PacketProcessingService extends Thread {
                     if (!packetData.getDes().equals(MainActivity.mMacAddress) || declaration.isRecordUpdate[packetData.getPosition()]) {
                         return;
                     }
-                    output = "receive: " + System.currentTimeMillis() + "\n";
+                    output = (System.currentTimeMillis() - MainActivity.sRequestRecordTime) + "\n";
                     try {
                         MainActivity.sRequestRecordDelayStream.write(output.getBytes());
                     } catch (IOException e) {
@@ -116,7 +116,7 @@ public class PacketProcessingService extends Thread {
                             || declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]) {
                         return;
                     }
-                    output = "receive: " + System.currentTimeMillis() + "\n";
+                    output = (System.currentTimeMillis() - MainActivity.sRequestDecvalTime) + "\n";
                     try {
                         MainActivity.sRequestDecvalDelayStream.write(output.getBytes());
                     } catch (IOException e) {
@@ -135,7 +135,7 @@ public class PacketProcessingService extends Thread {
                             || declaration.isGlobalDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]) {
                         return;
                     }
-                    output = "receive: " + System.currentTimeMillis() + "\n";
+                    output = (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime) + "\n";
                     try {
                         MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
                     } catch (IOException e) {

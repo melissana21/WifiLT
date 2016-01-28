@@ -83,6 +83,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static FileOutputStream sRequestDecvalDelayStream;
     protected static FileOutputStream sUpdateDecvalDelayStream;
 
+    protected static long sRequestRecordTime;
+    protected static long sRequestDecvalTime;
+    protected static long sUpdateDecvalTime;
+
     protected static DatagramSocket sDatagramSocket;
 
     @Override
