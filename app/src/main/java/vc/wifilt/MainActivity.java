@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         executorService = Executors.newCachedThreadPool();
 
         try {
-            sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
+//            sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
             sRequestRecordDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_record.txt");
             sRequestDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_decval.txt");
             sUpdateDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/update_decval.txt");
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
             e.printStackTrace();
         }
 
-        Log.v(TAG, "path: " + getExternalFilesDir(null).getAbsolutePath());
+//        Log.v(TAG, "path: " + getExternalFilesDir(null).getAbsolutePath());
 
 
 
@@ -138,18 +138,18 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
 
 
-        try {
-            mHeaderInfo = convertStreamToBytes(getAssets().open("StorageNode_1/L0_encDataHeaderInfo_25.txt"));
+//        try {
+//            mHeaderInfo = convertStreamToBytes(getAssets().open("StorageNode_1/L0_encDataHeaderInfo_25.txt"));
 //            mData = convertStreamToString(getAssets().open("StorageNode_1/L0_encData_25.txt"));
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 //        Log.v(TAG, "Read: " + new String(mHeaderInfo));
 
 
-        mBroadcastAddress = getBroadcastAddress(wifiIpAddress(this));
-        mMacAddress = getMacAddress(this);
+//        mBroadcastAddress = getBroadcastAddress(wifiIpAddress(this));
+//        mMacAddress = getMacAddress(this);
         int node_ID = 0;
         //// set node_ID(0,1)  cache : -1(owner)
         declaration.messageSize = new int[3];
@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         declaration.srcSymbols[declaration.currentLayer] = 1000;
         declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
         declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
-        startService(new Intent(MainActivity.this, ServerSocketService.class));
+//        startService(new Intent(MainActivity.this, ServerSocketService.class));
         LocalBroadcastManager.getInstance(MainActivity.this)
                 .registerReceiver(new BroadcastReceiver() {
                     @Override
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected void onDestroy() {
         super.onDestroy();
         try {
-            sFileOutputStream.close();
+//            sFileOutputStream.close();
             sRequestRecordDelayStream.close();
             sRequestDecvalDelayStream.close();
             sUpdateDecvalDelayStream.close();
@@ -230,20 +230,20 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     switchItem.setTitle(R.string.stop_service_title);
-//                    Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
-//
-//                    mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-//                        @Override
-//                        public void onSuccess() {
-//                            Toast.makeText(MainActivity.this, "Discovery initiation is successful", Toast.LENGTH_SHORT).show();
-//                        }
-//
-//                        @Override
-//                        public void onFailure(int reason) {
-//                            Toast.makeText(MainActivity.this, "Discovery initiation fails", Toast.LENGTH_SHORT).show();
-//                        }
-//                    });
-//                } else {
+                    Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
+
+                    mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(MainActivity.this, "Discovery initiation is successful", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onFailure(int reason) {
+                            Toast.makeText(MainActivity.this, "Discovery initiation fails", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
                     switchItem.setTitle(R.string.start_service_title);
                     try {
                         sDatagramSocket = new DatagramSocket();
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 }
             });
         } else if (item.status == WifiP2pDevice.CONNECTED) {
-            sendPacket(new PacketData("TEST", mHeaderInfo));
+//            sendPacket(new PacketData("TEST", mHeaderInfo));
 //            sendPacket(new PacketData("TEST", String.valueOf(1).getBytes()));
 /*            Intent broadcastIntent = new Intent(MainActivity.this, ClientSocketService.class);
             broadcastIntent.putExtra("EXTRA_IP", mBroadcastAddress);
@@ -334,17 +334,17 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         mManager.stopPeerDiscovery(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
-                    @Override
-                    public void onSuccess() {
+//                mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+//                    @Override
+//                    public void onSuccess() {
                         Toast.makeText(MainActivity.this, "Service stop", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onFailure(int reason) {
-
-                    }
-                });
+//                    }
+//
+//                    @Override
+//                    public void onFailure(int reason) {
+//
+//                    }
+//                });
             }
 
             @Override
@@ -420,12 +420,12 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
                 if (networkInfo.isConnected()) {
                     MainActivity.this.startService(new Intent(MainActivity.this, ServerSocketService.class));
-                    LocalBroadcastManager.getInstance(MainActivity.this)
-                            .registerReceiver(new BroadcastReceiver() {
-                                @Override
-                                public void onReceive(Context context, Intent intent) {
+//                    LocalBroadcastManager.getInstance(MainActivity.this)
+//                            .registerReceiver(new BroadcastReceiver() {
+//                                @Override
+//                                public void onReceive(Context context, Intent intent) {
 //                                    Log.v(TAG, "submit packet");
-                                    executorService.submit(new PacketProcessingService(intent));
+//                                    executorService.submit(new PacketProcessingService(intent));
 //                                    Gson gson = new Gson();
 //                                    String message = intent.getStringExtra("EXTRA_DATA");
 //                                    Log.v("receive", message);
@@ -500,8 +500,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 //                                            Log.v(TAG, "data: " + new String(packetData.getData()));
 //                                            break;
 //                                    }
-                                }
-                            }, new IntentFilter("WIFI_DIRECT_SOCKET"));
+//                                }
+//                            }, new IntentFilter("WIFI_DIRECT_SOCKET"));
                     mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
                         @Override
                         public void onConnectionInfoAvailable(WifiP2pInfo info) {
@@ -521,15 +521,15 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                             MainActivity.this.startService(broadcastIntent);
 */                        }
                     });
-                    int node_ID = 0;
+//                    int node_ID = 0;
                     //// set node_ID(0,1)  cache : -1(owner)
-                    declaration.messageSize = new int[3];
-                    declaration.srcSymbols = new int[3];
+//                    declaration.messageSize = new int[3];
+//                    declaration.srcSymbols = new int[3];
 
-                    declaration.messageSize[declaration.currentLayer] = 268;
-                    declaration.srcSymbols[declaration.currentLayer] = 1000;
-                    declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
-                    declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
+//                    declaration.messageSize[declaration.currentLayer] = 268;
+//                    declaration.srcSymbols[declaration.currentLayer] = 1000;
+//                    declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
+//                    declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
 
 
                 }

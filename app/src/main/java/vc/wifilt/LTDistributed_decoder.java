@@ -3,9 +3,6 @@ package vc.wifilt;
 
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 /**
  * Created by melissa on 2016/1/4.
  */
@@ -33,11 +30,11 @@ public class LTDistributed_decoder {
         declaration.requestcount ++;
         String output = "global request record count = " + declaration.requestcount + "\n";
 //        System.out.print(output);
-        try {
-            MainActivity.sFileOutputStream.write(output.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            MainActivity.sFileOutputStream.write(output.getBytes());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         if (!MainActivity.sIsGroupOwner) {
             packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(0).getBytes());
@@ -195,13 +192,13 @@ public class LTDistributed_decoder {
 //                            System.out.print("current degree = ");
 //                            System.out.println(declaration.PData_currentDegree[node_ID][r]);
 
-                            output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
-                            System.out.print(output);
-                            try {
-                                MainActivity.sFileOutputStream.write(output.getBytes());
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+//                            output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
+//                            System.out.print(output);
+//                            try {
+//                                MainActivity.sFileOutputStream.write(output.getBytes());
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            }
 
                             /*  0127 UPDATE  */
                             decodenumber--;
