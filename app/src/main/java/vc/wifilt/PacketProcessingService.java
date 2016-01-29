@@ -46,6 +46,11 @@ public class PacketProcessingService extends Thread {
                             new PacketData("ANSWER_GLOBAL_RECORD",
                                     MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());
 //                                    String.valueOf(declaration.globalDecodedSymbolsRecord[index]).getBytes());
+                    try {
+                        MainActivity.sFileOutputStream.write((MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord)+"\n").getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     returnData.setPosition(index);
                     returnData.setDes(packetData.getOri());
                     MainActivity.sendPacket(returnData);
@@ -66,8 +71,12 @@ public class PacketProcessingService extends Thread {
                     if (!MainActivity.sIsGroupOwner) {
                         return;
                     }
-                    System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
-                    declaration.globalDecodedSymbolsRecord[packetData.getPosition()/declaration.messageSize[declaration.currentLayer]]=1;
+                    synchronized (declaration.decVal) {
+                        System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+                    }
+                    synchronized (declaration.globalDecodedSymbolsRecord) {
+                        declaration.globalDecodedSymbolsRecord[packetData.getPosition() / declaration.messageSize[declaration.currentLayer]] = 1;
+                    }
                     returnData = new PacketData("SUCESS_UPDATE_DECVAL", String.valueOf(1).getBytes());
                     returnData.setPosition(packetData.getPosition());
                     returnData.setDes(packetData.getOri());
@@ -97,8 +106,16 @@ public class PacketProcessingService extends Thread {
 //                    Log.v("packet delay", "process: " + System.currentTimeMillis());
                     Log.v(TAG, "receive answer global record: " + packetData.getPosition());
 //                    int data = Integer.parseInt(new String(packetData.getData()));
+                    try {
+                        MainActivity.sFileOutputStream.write(packetData.getData());
+                        MainActivity.sFileOutputStream.write("\n".getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     int[] data = MainActivity.convertStringToIntArray(new String(packetData.getData()));
-                    declaration.globalDecodedSymbolsRecord = data;
+                    synchronized (declaration.globalDecodedSymbolsRecord) {
+                        declaration.globalDecodedSymbolsRecord = data;
+                    }
 //                    declaration.globalDecodedSymbolsRecord[packetData.getPosition()] = data;
 //                    Log.v(TAG, "position = " + packetData.getPosition());
 //                    Log.v(TAG, "before: " +declaration.isRecordUpdate[packetData.getPosition()]);
@@ -123,7 +140,9 @@ public class PacketProcessingService extends Thread {
                         e.printStackTrace();
                     }
                     Log.v(TAG, "receive answer global decval: " + packetData.getPosition());
-                    System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+                    synchronized (declaration.decVal) {
+                        System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+                    }
                     declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])] = true;
                     synchronized (MainActivity.waitingLock) {
 //                        MainActivity.isWaiting = false;

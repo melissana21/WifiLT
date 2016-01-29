@@ -194,13 +194,13 @@ public class LTDistributed_decoder {
 //                            System.out.print("current degree = ");
 //                            System.out.println(declaration.PData_currentDegree[node_ID][r]);
 
-                            output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
-                            System.out.print(output);
-                            try {
-                                MainActivity.sFileOutputStream.write(output.getBytes());
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+//                            output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
+//                            System.out.print(output);
+//                            try {
+//                                MainActivity.sFileOutputStream.write(output.getBytes());
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            }
 
                             /*  0127 UPDATE  */
                             decodenumber--;
@@ -282,7 +282,9 @@ public class LTDistributed_decoder {
                                         }
                                     } while (!declaration.isGlobalDecvalUpdate[(index - 1)]);
                                 }
-                                System.arraycopy(declaration.PData_codedData[node_ID][r],0,declaration.decVal,((index - 1) * declaration.messageSize[declaration.currentLayer]),declaration.messageSize[declaration.currentLayer]);
+                                synchronized (declaration.decVal) {
+                                    System.arraycopy(declaration.PData_codedData[node_ID][r], 0, declaration.decVal, ((index - 1) * declaration.messageSize[declaration.currentLayer]), declaration.messageSize[declaration.currentLayer]);
+                                }
                                 declaration.GlobalWrite[node_ID]++;
                             }
 //                            else {
@@ -294,7 +296,9 @@ public class LTDistributed_decoder {
 //                                }
 //                            }
 
-                            declaration.globalDecodedSymbolsRecord[index - 1] = rStep;
+                            synchronized (declaration.globalDecodedSymbolsRecord) {
+                                declaration.globalDecodedSymbolsRecord[index - 1] = rStep;
+                            }
                             declaration.sDecodedSymbols[node_ID]++;
 //                            packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(rStep).getBytes());
 //                            packetData.setPosition(index - 1);

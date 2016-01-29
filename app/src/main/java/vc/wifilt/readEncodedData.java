@@ -96,7 +96,9 @@ public class readEncodedData {
 */
                         declaration.GlobalTryWrite[node_ID]++;
                         if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
-                            System.arraycopy(decTemp,0,declaration.decVal,((index - 1) * declaration.messageSize[declaration.currentLayer]),declaration.messageSize[declaration.currentLayer]);
+                            synchronized (declaration.decVal) {
+                                System.arraycopy(decTemp, 0, declaration.decVal, ((index - 1) * declaration.messageSize[declaration.currentLayer]), declaration.messageSize[declaration.currentLayer]);
+                            }
                             if (!MainActivity.sIsGroupOwner) {
                                 packetData = new PacketData("UPDATE_GLOBAL_DECVAL", decTemp);
                                 packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
@@ -112,7 +114,9 @@ public class readEncodedData {
                         }
 
 
-                        declaration.globalDecodedSymbolsRecord[index - 1] = 1;
+                        synchronized (declaration.globalDecodedSymbolsRecord) {
+                            declaration.globalDecodedSymbolsRecord[index - 1] = 1;
+                        }
                         if (!MainActivity.sIsGroupOwner) {
                             packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(1).getBytes());
                             packetData.setPosition(index - 1);
