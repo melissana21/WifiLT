@@ -149,7 +149,7 @@ public class AfterP2P {
         }
         Log.v("writeFile", "start");
         String index = Integer.toString(declaration.currentLayer);
-        String Outputfilename=MainActivity.MainContext.getExternalFilesDir(null).getAbsolutePath() +declaration.Output_FileName+index+declaration.Output_Extension;
+        String Outputfilename=MainActivity.MainContext.getExternalFilesDir(null).getAbsolutePath() +declaration.Output_FileName+"_cache"+declaration.Output_Extension;
         System.out.println(Outputfilename);
         //System.out.println(declaration.rippleStep[0]);
         //System.out.println(declaration.rippleStep[1]);
