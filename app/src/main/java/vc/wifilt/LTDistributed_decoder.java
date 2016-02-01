@@ -194,13 +194,13 @@ public class LTDistributed_decoder {
 //                            System.out.print("current degree = ");
 //                            System.out.println(declaration.PData_currentDegree[node_ID][r]);
 
-//                            output = r + "current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n";
-//                            System.out.print(output);
-//                            try {
-//                                MainActivity.sFileOutputStream.write(output.getBytes());
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
+                            output = r + " current degree = " + declaration.PData_currentDegree[node_ID][r] + "\n index = " + (index - 1) + "\n";
+                            System.out.print(output);
+                            try {
+                                MainActivity.sFileOutputStream.write(output.getBytes());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 
                             /*  0127 UPDATE  */
                             decodenumber--;
@@ -259,7 +259,7 @@ public class LTDistributed_decoder {
                             declaration.isRecordUpdate[index-1] = false;
 
                             Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[index-1]);*/
-                            if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
+                            if(declaration.globalDecodedSymbolsRecord[index - 1] == 0) {
                                 if (!MainActivity.sIsGroupOwner) {
                                     packetData = new PacketData("UPDATE_GLOBAL_DECVAL", declaration.PData_codedData[node_ID][r]);
                                     packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
@@ -282,11 +282,12 @@ public class LTDistributed_decoder {
                                         }
                                     } while (!declaration.isGlobalDecvalUpdate[(index - 1)]);
                                 }
+                            }
                                 synchronized (declaration.decVal) {
                                     System.arraycopy(declaration.PData_codedData[node_ID][r], 0, declaration.decVal, ((index - 1) * declaration.messageSize[declaration.currentLayer]), declaration.messageSize[declaration.currentLayer]);
                                 }
                                 declaration.GlobalWrite[node_ID]++;
-                            }
+
 //                            else {
 //                                if (declaration.selfDecodedSymbolsRecord[node_ID][index - 1] != 0) {
 //                                    int position = ((index - 1) * declaration.messageSize[declaration.currentLayer]);
@@ -295,6 +296,12 @@ public class LTDistributed_decoder {
 //                                    MainActivity.sendPacket(packetData);
 //                                }
 //                            }
+                            output = "index = " + (index - 1) + "is done\n";
+                            try {
+                                MainActivity.sFileOutputStream.write(output.getBytes());
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
 
                             synchronized (declaration.globalDecodedSymbolsRecord) {
                                 declaration.globalDecodedSymbolsRecord[index - 1] = rStep;

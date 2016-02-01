@@ -138,6 +138,40 @@ public class AfterP2P {
         }catch (Exception e) {
             e.printStackTrace();
         }
+        Log.v("writeFile", "end");
     }
 
+    protected static void writeFile() {
+        while (true) {
+            if (declaration.globalFinish == 1) {
+                break;
+            }
+        }
+        Log.v("writeFile", "start");
+        String index = Integer.toString(declaration.currentLayer);
+        String Outputfilename=MainActivity.MainContext.getExternalFilesDir(null).getAbsolutePath() +declaration.Output_FileName+index+declaration.Output_Extension;
+        System.out.println(Outputfilename);
+        //System.out.println(declaration.rippleStep[0]);
+        //System.out.println(declaration.rippleStep[1]);
+//        System.out.println(declaration.decVal);
+
+
+        try{
+            //Byte result[]= new Byte[declaration.messageSize[declaration.currentLayer] * declaration.srcSymbols[declaration.currentLayer] - declaration.mPaddingSize[declaration.currentLayer]];
+            FileOutputStream fo=new FileOutputStream(Outputfilename);
+
+
+            for(int u = 0 ; u < (declaration.messageSize[declaration.currentLayer] * declaration.srcSymbols[declaration.currentLayer]) - declaration.mPaddingSize[declaration.currentLayer] ; u++)
+            {
+                fo.write(declaration.decVal[u]);
+            }
+
+
+            fo.close();
+
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.v("writeFile", "end");
+    }
 }

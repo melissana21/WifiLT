@@ -154,9 +154,11 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         //// set node_ID(0,1)  cache : -1(owner)
         declaration.messageSize = new int[3];
         declaration.srcSymbols = new int[3];
+        declaration.mPaddingSize = new int[3];
 
         declaration.messageSize[declaration.currentLayer] = 268;
         declaration.srcSymbols[declaration.currentLayer] = 1000;
+        declaration.mPaddingSize[declaration.currentLayer] = 457;
         declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
         declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
         startService(new Intent(MainActivity.this, ServerSocketService.class));
@@ -254,6 +256,12 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     }
                     if (sIsGroupOwner) {
                         sendPacket(new PacketData("OWNER_ADDRESS", mMacAddress.getBytes()));
+                        executorService.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                AfterP2P.writeFile();
+                            }
+                        });
                     }
                         executorService.submit(new Runnable() {
                             @Override
