@@ -60,8 +60,12 @@ public class PacketProcessingService extends Thread {
                     if (!MainActivity.sIsGroupOwner) {
                         return;
                     }
-                    byte[] array = Arrays.copyOfRange(declaration.decVal, packetData.getPosition(), packetData.getPosition() + declaration.messageSize[declaration.currentLayer]);
-                    returnData = new PacketData("ANSWER_GLOBAL_DECVAL", array);
+                    if (declaration.globalDecodedSymbolsRecord[packetData.getPosition() / declaration.messageSize[declaration.currentLayer]] != 0) {
+                        byte[] array = Arrays.copyOfRange(declaration.decVal, packetData.getPosition(), packetData.getPosition() + declaration.messageSize[declaration.currentLayer]);
+                        returnData = new PacketData("ANSWER_GLOBAL_DECVAL", array);
+                    } else {
+                        returnData = new PacketData("ANSWER_GLOBAL_DECVAL", String.valueOf(-1).getBytes());
+                    }
                     returnData.setPosition(packetData.getPosition());
                     returnData.setDes(packetData.getOri());
                     MainActivity.sendPacket(returnData);
@@ -140,8 +144,15 @@ public class PacketProcessingService extends Thread {
                         e.printStackTrace();
                     }
                     Log.v(TAG, "receive answer global decval: " + packetData.getPosition());
-                    synchronized (declaration.decVal) {
-                        System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+                    if ((new String(packetData.getData())).equals(String.valueOf(-1))) {
+                        synchronized (declaration.globalDecodedSymbolsRecord) {
+                            declaration.globalDecodedSymbolsRecord[packetData.getPosition() / declaration.messageSize[declaration.currentLayer]] = 0;
+                        }
+                        Log.v("recorderror", "it's in");
+                    } else {
+                        synchronized (declaration.decVal) {
+                            System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+                        }
                     }
                     declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])] = true;
                     synchronized (MainActivity.waitingLock) {
