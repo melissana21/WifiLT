@@ -148,8 +148,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 //        Log.v(TAG, "Read: " + new String(mHeaderInfo));
 
 
-        mBroadcastAddress = getBroadcastAddress(wifiIpAddress(this));
-        mMacAddress = getMacAddress(this);
+//        mBroadcastAddress = getBroadcastAddress(wifiIpAddress(this));
+//        mMacAddress = getMacAddress(this);
         int node_ID = 0;
         //// set node_ID(0,1)  cache : -1(owner)
         declaration.messageSize = new int[3];
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         declaration.mPaddingSize[declaration.currentLayer] = 457;
         declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
         declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
-        startService(new Intent(MainActivity.this, ServerSocketService.class));
+//        startService(new Intent(MainActivity.this, ServerSocketService.class));
         LocalBroadcastManager.getInstance(MainActivity.this)
                 .registerReceiver(new BroadcastReceiver() {
                     @Override
@@ -232,20 +232,20 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     switchItem.setTitle(R.string.stop_service_title);
-//                    Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
-//
-//                    mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-//                        @Override
-//                        public void onSuccess() {
-//                            Toast.makeText(MainActivity.this, "Discovery initiation is successful", Toast.LENGTH_SHORT).show();
-//                        }
-//
-//                        @Override
-//                        public void onFailure(int reason) {
-//                            Toast.makeText(MainActivity.this, "Discovery initiation fails", Toast.LENGTH_SHORT).show();
-//                        }
-//                    });
-//                } else {
+                    Toast.makeText(MainActivity.this, "Service start", Toast.LENGTH_SHORT).show();
+
+                    mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(MainActivity.this, "Discovery initiation is successful", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onFailure(int reason) {
+                            Toast.makeText(MainActivity.this, "Discovery initiation fails", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
                     switchItem.setTitle(R.string.start_service_title);
                     try {
                         sDatagramSocket = new DatagramSocket();
