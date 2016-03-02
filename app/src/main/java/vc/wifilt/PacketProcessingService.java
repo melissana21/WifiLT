@@ -7,9 +7,14 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
-
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class PacketProcessingService extends Thread {
@@ -41,20 +46,48 @@ public class PacketProcessingService extends Thread {
                     if (!MainActivity.sIsGroupOwner) {
                         return;
                     }
-                    index = Integer.parseInt(new String(packetData.getData()));
-                    returnData =
-                            new PacketData("ANSWER_GLOBAL_RECORD",
-                                    MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());
-//                                    String.valueOf(declaration.globalDecodedSymbolsRecord[index]).getBytes());
+
+                    int[] clientRecord = MainActivity.convertStringToIntArray(new String(packetData.getData()));
+                    Map<Integer, byte[]> valueMap = new HashMap<>();
+
+                    for (int i = 0; i < declaration.globalDecodedSymbolsRecord.length; i++) {
+                        if (clientRecord[i] == 0 && declaration.globalDecodedSymbolsRecord[i] == 1) {
+                            valueMap.put(i, Arrays.copyOfRange(declaration.decVal,
+                                    declaration.messageSize[declaration.currentLayer] * i,
+                                    declaration.messageSize[declaration.currentLayer] * (i + 1)));
+                            Log.v("map", "send key: " + i);
+                            if (valueMap.size() == 200) {
+                                break;
+                            }
+                        }
+                    }
+
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                     try {
-                        MainActivity.sFileOutputStream.write((MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord)+"\n").getBytes());
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+                        objectOutputStream.writeObject(valueMap);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    returnData.setPosition(index);
+
+                    returnData =
+                            new PacketData("ANSWER_GLOBAL_RECORD", byteArrayOutputStream.toByteArray());
+
+//                    index = Integer.parseInt(new String(packetData.getData()));
+//                    returnData =
+//                            new PacketData("ANSWER_GLOBAL_RECORD",
+//                                    MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());
+//                                    String.valueOf(declaration.globalDecodedSymbolsRecord[index]).getBytes());
+//                    try {
+//                        MainActivity.sFileOutputStream.write((MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord)+"\n").getBytes());
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    returnData.setPosition(index);
+                    returnData.setPosition(0);
                     returnData.setDes(packetData.getOri());
                     MainActivity.sendPacket(returnData);
-                    Log.v(TAG, "send answer global record: " + index);
+//                    Log.v(TAG, "send answer global record: " + index);
                     break;
                 case "REQUEST_GLOBAL_DECVAL":
                     if (!MainActivity.sIsGroupOwner) {
@@ -108,18 +141,43 @@ public class PacketProcessingService extends Thread {
                         e.printStackTrace();
                     }
 //                    Log.v("packet delay", "process: " + System.currentTimeMillis());
-                    Log.v(TAG, "receive answer global record: " + packetData.getPosition());
+                    Log.v(TAG, "receive answer global record");
 //                    int data = Integer.parseInt(new String(packetData.getData()));
+//                    try {
+//                        MainActivity.sFileOutputStream.write(packetData.getData());
+//                        MainActivity.sFileOutputStream.write("\n".getBytes());
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    int[] data = MainActivity.convertStringToIntArray(new String(packetData.getData()));
+
+                    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packetData.getData());
                     try {
-                        MainActivity.sFileOutputStream.write(packetData.getData());
-                        MainActivity.sFileOutputStream.write("\n".getBytes());
+                        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+                        Map<Integer, byte[]> answerMap = (Map<Integer, byte[]>) objectInputStream.readObject();
+                        for (Integer key : answerMap.keySet()) {
+                            Log.v("map", "receive key: " + key);
+                            synchronized (declaration.decVal) {
+                                System.arraycopy(answerMap.get(key),
+                                        0,
+                                        declaration.decVal,
+                                        declaration.messageSize[declaration.currentLayer] * key,
+                                        declaration.messageSize[declaration.currentLayer]);
+                            }
+                            synchronized (declaration.globalDecodedSymbolsRecord) {
+                                declaration.globalDecodedSymbolsRecord[key] = 1;
+                                declaration.selfDecodedSymbolsRecord[0][key] = 1;
+                            }
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
-                    int[] data = MainActivity.convertStringToIntArray(new String(packetData.getData()));
-                    synchronized (declaration.globalDecodedSymbolsRecord) {
-                        declaration.globalDecodedSymbolsRecord = data;
-                    }
+
+//                    synchronized (declaration.globalDecodedSymbolsRecord) {
+//                        declaration.globalDecodedSymbolsRecord = data;
+//                    }
 //                    declaration.globalDecodedSymbolsRecord[packetData.getPosition()] = data;
 //                    Log.v(TAG, "position = " + packetData.getPosition());
 //                    Log.v(TAG, "before: " +declaration.isRecordUpdate[packetData.getPosition()]);
