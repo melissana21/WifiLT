@@ -51,7 +51,7 @@ public class PacketProcessingService extends Thread {
                     Map<Integer, byte[]> valueMap = new HashMap<>();
 
                     for (int i = 0; i < declaration.globalDecodedSymbolsRecord.length; i++) {
-                        if (clientRecord[i] == 0 && declaration.globalDecodedSymbolsRecord[i] == 1) {
+                        if (clientRecord[i] == 0 && declaration.globalDecodedSymbolsRecord[i] >= 1) {
                             valueMap.put(i, Arrays.copyOfRange(declaration.decVal,
                                     declaration.messageSize[declaration.currentLayer] * i,
                                     declaration.messageSize[declaration.currentLayer] * (i + 1)));
