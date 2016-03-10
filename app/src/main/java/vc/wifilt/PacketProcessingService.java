@@ -56,7 +56,7 @@ public class PacketProcessingService extends Thread {
                                     declaration.messageSize[declaration.currentLayer] * i,
                                     declaration.messageSize[declaration.currentLayer] * (i + 1)));
                             Log.v("map", "send key: " + i);
-                            if (valueMap.size() == 200) {
+                            if (valueMap.size() == 10) {
                                 break;
                             }
                         }
