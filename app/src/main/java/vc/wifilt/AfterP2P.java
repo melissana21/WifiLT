@@ -124,6 +124,8 @@ public class AfterP2P {
 
         try{
             //Byte result[]= new Byte[declaration.messageSize[declaration.currentLayer] * declaration.srcSymbols[declaration.currentLayer] - declaration.mPaddingSize[declaration.currentLayer]];
+            MainActivity.sRequestRecordDelayStream.write(Integer.toString(MainActivity.sRequestRecordLoss).getBytes());
+            MainActivity.sUpdateDecvalDelayStream.write(Integer.toString(MainActivity.sUpdateDecvalLoss).getBytes());
             FileOutputStream fo=new FileOutputStream(Outputfilename);
 
 

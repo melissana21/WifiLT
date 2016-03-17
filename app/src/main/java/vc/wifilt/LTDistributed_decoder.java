@@ -44,6 +44,7 @@ public class LTDistributed_decoder {
             packetData.setDes(MainActivity.mOwnerAddress);
 //                        MainActivity.isWaiting = true;
             do {
+                MainActivity.sRequestRecordLoss++;
                 MainActivity.sRequestRecordTime = System.currentTimeMillis();
 //                output = "request: " + System.currentTimeMillis() + "\n";
 //                try {
@@ -67,6 +68,7 @@ public class LTDistributed_decoder {
 //            Log.v("LTDistributed", "position = " + (declaration.PData_requireSrc[node_ID][r][s]-1));
             } while (!declaration.isRecordUpdate[0]);
             declaration.isRecordUpdate[0] = false;
+            MainActivity.sRequestRecordLoss--;
         }
         for(int r = 0 ; r < dTime ; r++)
         {
@@ -266,6 +268,7 @@ public class LTDistributed_decoder {
                                     packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
                                     packetData.setDes(MainActivity.mOwnerAddress);
                                     do {
+                                        MainActivity.sUpdateDecvalLoss++;
                                         MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
 //                                        output = "request: " + System.currentTimeMillis() + "\n";
 //                                        try {
@@ -282,6 +285,7 @@ public class LTDistributed_decoder {
                                             }
                                         }
                                     } while (!declaration.isGlobalDecvalUpdate[(index - 1)]);
+                                    MainActivity.sUpdateDecvalLoss--;
                                 }
                             }
                                 synchronized (declaration.decVal) {

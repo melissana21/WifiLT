@@ -83,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static FileOutputStream sRequestDecvalDelayStream;
     protected static FileOutputStream sUpdateDecvalDelayStream;
 
+    protected static int sRequestRecordLoss = 0;
+    protected static int sUpdateDecvalLoss = 0;
     protected static long sRequestRecordTime;
     protected static long sRequestDecvalTime;
     protected static long sUpdateDecvalTime;
@@ -156,9 +158,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         declaration.srcSymbols = new int[3];
         declaration.mPaddingSize = new int[3];
 
-        declaration.messageSize[declaration.currentLayer] = 268;
-        declaration.srcSymbols[declaration.currentLayer] = 1000;
-        declaration.mPaddingSize[declaration.currentLayer] = 457;
+        declaration.messageSize[declaration.currentLayer] = 1338;//268;
+        declaration.srcSymbols[declaration.currentLayer] = 200;//1000;
+        declaration.mPaddingSize[declaration.currentLayer] = 57;//457;
         declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
         declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
 //        startService(new Intent(MainActivity.this, ServerSocketService.class));
@@ -255,7 +257,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                         e.printStackTrace();
                     }
                     if (sIsGroupOwner) {
-                        sendPacket(new PacketData("OWNER_ADDRESS", mMacAddress.getBytes()));
+                        for (int i = 0; i < 5; i++) {
+                            sendPacket(new PacketData("OWNER_ADDRESS", mMacAddress.getBytes()));
+                        }
                         executorService.submit(new Runnable() {
                             @Override
                             public void run() {
