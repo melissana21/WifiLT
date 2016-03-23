@@ -4,12 +4,16 @@ package vc.wifilt;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Created by melissa on 2016/1/4.
  */
 public class LTDistributed_decoder {
     private static int sPacketTimeout = 1000;
+    static int maxRequestNumber = 6;
+    static int[] indices = new int[maxRequestNumber];
+    static int currentIndex = 0;
 
     public static void main(int eNum, int rStep, int layer, int node_ID) {
         int n = 0;
@@ -39,8 +43,8 @@ public class LTDistributed_decoder {
 //        }
 
         if (!MainActivity.sIsGroupOwner) {
-            packetData = new PacketData("REQUEST_GLOBAL_RECORD",
-                    MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());
+            packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(-1).getBytes());
+//                    MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());
             packetData.setDes(MainActivity.mOwnerAddress);
 //                        MainActivity.isWaiting = true;
             do {
@@ -70,6 +74,41 @@ public class LTDistributed_decoder {
             declaration.isRecordUpdate[0] = false;
             MainActivity.sRequestRecordLoss--;
         }
+
+        for (int i = 0; i < declaration.globalDecodedSymbolsRecord.length; i++) {
+            if (declaration.selfDecodedSymbolsRecord[0][i] == 0 && declaration.globalDecodedSymbolsRecord[i] != 0) {
+                indices[currentIndex] = i;
+                currentIndex++;
+            }
+            if (currentIndex == maxRequestNumber || i == declaration.globalDecodedSymbolsRecord.length) {
+                if (currentIndex == 0) {
+                    break;
+                }
+                if (i == declaration.globalDecodedSymbolsRecord.length) {
+                    indices = Arrays.copyOf(indices, currentIndex);
+                }
+                packetData = new PacketData("REQUEST_GLOBAL_DECVAL", MainActivity.convertIntArrayToString(indices).getBytes());
+                packetData.setDes(MainActivity.mOwnerAddress);
+                do {
+                    MainActivity.sRequestDecvalLoss++;
+                    MainActivity.sRequestDecvalTime = System.currentTimeMillis();
+                    MainActivity.sendPacket(packetData);
+                    synchronized (MainActivity.waitingLock) {
+                        try {
+                            MainActivity.waitingLock.wait(sPacketTimeout);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } while (!declaration.isDecvalUpdate[0]);
+                declaration.isDecvalUpdate[0] = false;
+                MainActivity.sRequestDecvalLoss--;
+
+                indices = new int[maxRequestNumber];
+                currentIndex = 0;
+            }
+        }
+
         for(int r = 0 ; r < dTime ; r++)
         {
 //            if(declaration.globalFinish == 1){

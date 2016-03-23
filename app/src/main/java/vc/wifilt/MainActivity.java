@@ -32,6 +32,7 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,14 +41,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -84,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static FileOutputStream sUpdateDecvalDelayStream;
 
     protected static int sRequestRecordLoss = 0;
+    protected static int sRequestDecvalLoss = 0;
     protected static int sUpdateDecvalLoss = 0;
     protected static long sRequestRecordTime;
     protected static long sRequestDecvalTime;
