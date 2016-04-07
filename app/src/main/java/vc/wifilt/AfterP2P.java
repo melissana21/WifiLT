@@ -10,26 +10,27 @@ import java.io.IOException;
  */
 public class AfterP2P {
     protected static void main(int node_ID){
+        MainActivity.sTotalTime = System.currentTimeMillis();
         System.out.println("Start !!");
-       // for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
-       //     int flag_first = 1;
-            //int node_ID=0;
-            declaration.currentLayer=0;
-            try {
-                readNodeInfo.main(node_ID,MainActivity.MainContext);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        // for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
+        //     int flag_first = 1;
+        //int node_ID=0;
+        declaration.currentLayer=0;
+        try {
+            readNodeInfo.main(node_ID,MainActivity.MainContext);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            try {
-                readHeaderInfo.main(declaration.currentLayer, node_ID,MainActivity.MainContext);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            readHeaderInfo.main(declaration.currentLayer, node_ID,MainActivity.MainContext);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
 
-       // }
+        // }
 //        declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
 
         System.out.println(declaration.decVal.length);
@@ -60,13 +61,13 @@ public class AfterP2P {
 
 
 
-     //   for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
-            try {
-                declaration.elementNum[node_ID] =readEncodedData.main(declaration.EncPacketNum[declaration.currentLayer],declaration.currentLayer, node_ID,MainActivity.MainContext);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-     //   }
+        //   for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
+        try {
+            declaration.elementNum[node_ID] =readEncodedData.main(declaration.EncPacketNum[declaration.currentLayer],declaration.currentLayer, node_ID,MainActivity.MainContext);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //   }
 
 
         Log.v("AfterP2P", "start thread");
@@ -88,7 +89,20 @@ public class AfterP2P {
 
             }
             else {
-                System.out.println("收工!");
+                MainActivity.sTotalTime = System.currentTimeMillis() - MainActivity.sTotalTime;
+                System.out.println("收工! Total Time = " + MainActivity.sTotalTime);
+                System.out.println("Request Record Total Time = " + MainActivity.sRequestRecordTotalTime);
+                System.out.println("Request Decval Total Time = " + MainActivity.sRequestDecvalTotalTime);
+                System.out.println("Update Decval Total Time = " + MainActivity.sUpdateDecvalTotalTime);
+
+                System.out.println("# Request Record packet = " + MainActivity.num_RequestRecord);
+                System.out.println("# Request Decval packet = " + MainActivity.num_RequestDecval);
+                System.out.println("# Update Decval packet = " + MainActivity.num_UpdateDecval);
+
+                System.out.println("Request Record Loss = " + MainActivity.sRequestRecordLoss);
+                System.out.println("Request Decval Loss = " + MainActivity.sRequestDecvalLoss);
+                System.out.println("Update Decval Loss = " + MainActivity.sUpdateDecvalLoss);
+                System.out.println(" ");
                 break;
             }
         }
@@ -108,10 +122,10 @@ public class AfterP2P {
 //            t2.join();
 //
 //        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
+        // TODO Auto-generated catch block
 
-            //		t2.interrupt();
-            //		t1.interrupt();
+        //		t2.interrupt();
+        //		t1.interrupt();
 //        }
 
         String index = Integer.toString(declaration.currentLayer);

@@ -3,15 +3,19 @@ package vc.wifilt;
 
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by melissa on 2016/1/4.
  */
 public class LTDistributed_decoder {
     private static int sPacketTimeout = 1000;
-    static int maxRequestNumber = 6;
+    static int maxRequestNumber = 10;
     static int[] indices = new int[maxRequestNumber];
     static int currentIndex = 0;
 
@@ -75,9 +79,11 @@ public class LTDistributed_decoder {
             MainActivity.sRequestRecordLoss--;
         }
 
+        Map<Integer, byte[]> valueMap = new HashMap<>();
         for (int i = 0; i < declaration.globalDecodedSymbolsRecord.length; i++) {
             if (declaration.selfDecodedSymbolsRecord[0][i] == 0 && declaration.globalDecodedSymbolsRecord[i] != 0) {
                 indices[currentIndex] = i;
+                valueMap.put(i,null);
                 currentIndex++;
             }
             if (currentIndex == maxRequestNumber || i == declaration.globalDecodedSymbolsRecord.length) {
@@ -87,7 +93,19 @@ public class LTDistributed_decoder {
                 if (i == declaration.globalDecodedSymbolsRecord.length) {
                     indices = Arrays.copyOf(indices, currentIndex);
                 }
-                packetData = new PacketData("REQUEST_GLOBAL_DECVAL", MainActivity.convertIntArrayToString(indices).getBytes());
+
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                try {
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+                    objectOutputStream.writeObject(valueMap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                // packetData = new PacketData("REQUEST_GLOBAL_DECVAL", MainActivity.convertIntArrayToString(indices).getBytes());
+                packetData = new PacketData("REQUEST_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
+
                 packetData.setDes(MainActivity.mOwnerAddress);
                 do {
                     MainActivity.sRequestDecvalLoss++;
@@ -105,9 +123,12 @@ public class LTDistributed_decoder {
                 MainActivity.sRequestDecvalLoss--;
 
                 indices = new int[maxRequestNumber];
+                valueMap = new HashMap<>();
                 currentIndex = 0;
             }
         }
+        Log.v("LTD","map size = "+valueMap.size());
+
 
         for(int r = 0 ; r < dTime ; r++)
         {
@@ -164,8 +185,8 @@ public class LTDistributed_decoder {
                         declaration.isRecordUpdate[(declaration.PData_requireSrc[node_ID][r][s]-1)] = false;
 
                         Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[declaration.PData_requireSrc[node_ID][r][s]-1]);*/
-                        if(declaration.globalDecodedSymbolsRecord[index-1] != 0)
-                        {
+                        //if(declaration.globalDecodedSymbolsRecord[index-1] != 0)
+                        //{
 //                            if(declaration.selfDecodedSymbolsRecord[node_ID][index-1] == 0){
 //
 //                                if (!MainActivity.sIsGroupOwner) {
@@ -200,8 +221,8 @@ public class LTDistributed_decoder {
 //                                declaration.GlobalRead[node_ID]++;
 //                                declaration.selfDecodedSymbolsRecord[node_ID][index-1] =1;
 //                            }
-                            decode = 1;
-                        }
+                        //   decode = 1;
+                        //}
 //                        else {
 //                            if(declaration.selfDecodedSymbolsRecord[node_ID][declaration.PData_requireSrc[node_ID][r][s]-1] != 0){
 //                                int position = ((declaration.PData_requireSrc[node_ID][r][s]-1) * declaration.messageSize[declaration.currentLayer]);
@@ -327,10 +348,10 @@ public class LTDistributed_decoder {
                                     MainActivity.sUpdateDecvalLoss--;
                                 }
                             }
-                                synchronized (declaration.decVal) {
-                                    System.arraycopy(declaration.PData_codedData[node_ID][r], 0, declaration.decVal, ((index - 1) * declaration.messageSize[declaration.currentLayer]), declaration.messageSize[declaration.currentLayer]);
-                                }
-                                declaration.GlobalWrite[node_ID]++;
+                            synchronized (declaration.decVal) {
+                                System.arraycopy(declaration.PData_codedData[node_ID][r], 0, declaration.decVal, ((index - 1) * declaration.messageSize[declaration.currentLayer]), declaration.messageSize[declaration.currentLayer]);
+                            }
+                            declaration.GlobalWrite[node_ID]++;
 
 //                            else {
 //                                if (declaration.selfDecodedSymbolsRecord[node_ID][index - 1] != 0) {

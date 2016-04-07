@@ -94,21 +94,37 @@ public class PacketProcessingService extends Thread {
                         return;
                     }
 
-                    int[] clientIndices = MainActivity.convertStringToIntArray(new String(packetData.getData()));
+                    // int[] clientIndices = MainActivity.convertStringToIntArray(new String(packetData.getData()));
 
+
+                    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packetData.getData());
                     Map<Integer, byte[]> valueMap = new HashMap<>();
+                    try {
+                        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+                        Map<Integer, byte[]> InputMap = (Map<Integer, byte[]>) objectInputStream.readObject();
+                        for (Integer key : InputMap.keySet()) {
+                            valueMap.put(key, Arrays.copyOfRange(declaration.decVal,
+                                    declaration.messageSize[declaration.currentLayer] *key,
+                                    declaration.messageSize[declaration.currentLayer] * (key + 1)));
+                            Log.v("map", "send key: " + key);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
 
-                    for (int i = 0; i < clientIndices.length; i++) {
+//                    for (int i = 0; i < clientIndices.length; i++) {
 //                        if (clientRecord[i] == 0 && declaration.globalDecodedSymbolsRecord[i] >= 1) {
-                            valueMap.put(clientIndices[i], Arrays.copyOfRange(declaration.decVal,
-                                    declaration.messageSize[declaration.currentLayer] * clientIndices[i],
-                                    declaration.messageSize[declaration.currentLayer] * (clientIndices[i] + 1)));
-                            Log.v("map", "send key: " + clientIndices[i]);
+//                            valueMap.put(clientIndices[i], Arrays.copyOfRange(declaration.decVal,
+//                                    declaration.messageSize[declaration.currentLayer] * clientIndices[i],
+//                                    declaration.messageSize[declaration.currentLayer] * (clientIndices[i] + 1)));
+//                            Log.v("map", "send key: " + clientIndices[i]);
 //                            if (valueMap.size() == 10) {
 //                                break;
 //                            }
 //                        }
-                    }
+//                    }
 
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                     try {
@@ -172,6 +188,9 @@ public class PacketProcessingService extends Thread {
                         return;
                     }
                     output = (System.currentTimeMillis() - MainActivity.sRequestRecordTime) + "\n";
+
+                    MainActivity.sRequestRecordTotalTime = MainActivity.sRequestRecordTotalTime + (System.currentTimeMillis() - MainActivity.sRequestRecordTime);
+                    MainActivity.num_RequestRecord = MainActivity.num_RequestRecord + 1;
                     try {
                         MainActivity.sRequestRecordDelayStream.write(output.getBytes());
                     } catch (IOException e) {
@@ -232,7 +251,12 @@ public class PacketProcessingService extends Thread {
                             || declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]) {
                         return;
                     }
+
                     output = (System.currentTimeMillis() - MainActivity.sRequestDecvalTime) + "\n";
+
+                    MainActivity.sRequestDecvalTotalTime = MainActivity.sRequestDecvalTotalTime + (System.currentTimeMillis() - MainActivity.sRequestDecvalTime);
+                    MainActivity.num_RequestDecval = MainActivity.num_RequestDecval + 1;
+
                     try {
                         MainActivity.sRequestDecvalDelayStream.write(output.getBytes());
                     } catch (IOException e) {
@@ -251,7 +275,7 @@ public class PacketProcessingService extends Thread {
 //                    }
 //                    declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])] = true;
 
-                    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packetData.getData());
+                    byteArrayInputStream = new ByteArrayInputStream(packetData.getData());
                     try {
                         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
                         Map<Integer, byte[]> answerMap = (Map<Integer, byte[]>) objectInputStream.readObject();
@@ -266,7 +290,7 @@ public class PacketProcessingService extends Thread {
                             }
 //                            synchronized (declaration.globalDecodedSymbolsRecord) {
 //                                declaration.globalDecodedSymbolsRecord[key] = 1;
-                                declaration.selfDecodedSymbolsRecord[0][key] = 1;
+                            declaration.selfDecodedSymbolsRecord[0][key] = 1;
 //                            }
                         }
                     } catch (IOException e) {
@@ -297,6 +321,11 @@ public class PacketProcessingService extends Thread {
                         return;
                     }
                     output = (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime) + "\n";
+
+                    MainActivity.sUpdateDecvalTotalTime = MainActivity.sUpdateDecvalTotalTime + (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime);
+                    MainActivity.num_UpdateDecval = MainActivity.num_UpdateDecval + 1;
+
+
                     try {
                         MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
                     } catch (IOException e) {

@@ -95,6 +95,16 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static long sRequestDecvalTime;
     protected static long sUpdateDecvalTime;
 
+    protected static long sUpdateDecvalTotalTime = 0;
+    protected static long sRequestRecordTotalTime = 0;
+    protected static long sRequestDecvalTotalTime = 0;
+    protected static long sTotalTime = 0;
+
+    protected static int num_RequestRecord = 0;
+    protected static int num_RequestDecval = 0;
+    protected static int num_UpdateDecval = 0;
+
+
     protected static DatagramSocket sDatagramSocket;
 
     @Override
@@ -273,14 +283,14 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                             }
                         });
                     }
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                AfterP2P.main(0);
-                            }
-                        });
-                        FinishLayer finishLayer = new FinishLayer();
-                        MainActivity.executorService.submit(finishLayer);
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            AfterP2P.main(0);
+                        }
+                    });
+                    FinishLayer finishLayer = new FinishLayer();
+                    MainActivity.executorService.submit(finishLayer);
 //                    stopService();
                 }
             }
@@ -355,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 //                mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
 //                    @Override
 //                    public void onSuccess() {
-                        Toast.makeText(MainActivity.this, "Service stop", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Service stop", Toast.LENGTH_SHORT).show();
 //                    }
 //
 //                    @Override
