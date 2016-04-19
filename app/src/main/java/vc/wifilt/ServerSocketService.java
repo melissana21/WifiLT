@@ -3,7 +3,6 @@ package vc.wifilt;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -12,13 +11,11 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.OptionalDataException;
-import java.io.Serializable;
 import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
+import java.util.concurrent.Executors;
 
 /**
  * Provides a ServerSocket waiting for socket to connect.
@@ -93,6 +90,14 @@ class ServerThread extends Thread {
                 if (packetData.getType().equals("OWNER_ADDRESS")) {
                     MainActivity.mOwnerAddress = new String(packetData.getData());
                     Log.v(ServerSocketService.TAG, "owner address: " + MainActivity.mOwnerAddress);
+                    continue;
+                }
+                if (packetData.getType().equals("OUTPUT_FILE_NAME")) {
+                    MainActivity.executorService.shutdownNow();
+                    MainActivity.executorService = Executors.newCachedThreadPool();
+
+                    MainActivity.sFileName = new String(packetData.getData());
+                    LogFragment.sLogText.setText("Owner: " + MainActivity.mOwnerAddress + "\nFile Name: " + MainActivity.sFileName);
                     continue;
                 }
                 if (!packetData.getDes().equals(MainActivity.mMacAddress)) {

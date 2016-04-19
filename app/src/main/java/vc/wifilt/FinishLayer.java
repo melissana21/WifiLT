@@ -1,7 +1,5 @@
 package vc.wifilt;
 
-import java.math.BigInteger;
-
 /**
  * Created by melissa on 2016/1/4.
  */
@@ -41,6 +39,7 @@ public class FinishLayer extends Thread{
                 declaration.finishcount=declaration.srcSymbols[declaration.currentLayer]-unfinishcount;
                 System.out.print("finishcount");
                 System.out.println(declaration.finishcount);
+                LogFragment.sLogText.setText("Finish Count: " + declaration.finishcount);
             }
         }
     }

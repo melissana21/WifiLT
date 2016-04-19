@@ -2,6 +2,7 @@ package vc.wifilt;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.NetworkInfo;
@@ -21,18 +22,21 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,18 +45,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -82,11 +82,13 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static final Object waitingLock = new Object();
     protected static boolean isWaiting;
     protected static ExecutorService executorService;
+    protected static ExecutorService sPacketProcessingThread;
 
     protected static FileOutputStream sFileOutputStream;
     protected static FileOutputStream sRequestRecordDelayStream;
     protected static FileOutputStream sRequestDecvalDelayStream;
     protected static FileOutputStream sUpdateDecvalDelayStream;
+    protected static FileOutputStream sResultStream;
 
     protected static int sRequestRecordLoss = 0;
     protected static int sRequestDecvalLoss = 0;
@@ -104,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static int num_RequestDecval = 0;
     protected static int num_UpdateDecval = 0;
 
+    protected static String sFileName = "default";
 
     protected static DatagramSocket sDatagramSocket;
 
@@ -111,11 +114,14 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(false);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -136,15 +142,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 
         MainContext = getApplicationContext();
         executorService = Executors.newCachedThreadPool();
+        sPacketProcessingThread = Executors.newSingleThreadExecutor();
 
-        try {
-            sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
-            sRequestRecordDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_record.txt");
-            sRequestDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_decval.txt");
-            sUpdateDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/update_decval.txt");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
 
 //        Log.v(TAG, "path: " + getExternalFilesDir(null).getAbsolutePath());
 
@@ -170,21 +169,13 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 //        mMacAddress = getMacAddress(this);
         int node_ID = 0;
         //// set node_ID(0,1)  cache : -1(owner)
-        declaration.messageSize = new int[3];
-        declaration.srcSymbols = new int[3];
-        declaration.mPaddingSize = new int[3];
-
-        declaration.messageSize[declaration.currentLayer] = 1338;//268;
-        declaration.srcSymbols[declaration.currentLayer] = 200;//1000;
-        declaration.mPaddingSize[declaration.currentLayer] = 57;//457;
-        declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
-        declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
 //        startService(new Intent(MainActivity.this, ServerSocketService.class));
         LocalBroadcastManager.getInstance(MainActivity.this)
                 .registerReceiver(new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        executorService.submit(new PacketProcessingService(intent));
+                        sPacketProcessingThread.submit(new PacketProcessingService(intent));
+//                        executorService.submit(new PacketProcessingService(intent));
                     }
                 }, new IntentFilter("WIFI_DIRECT_SOCKET"));
 //        Log.v(TAG, "Data: " + mData);
@@ -229,13 +220,14 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
             sRequestRecordDelayStream.close();
             sRequestDecvalDelayStream.close();
             sUpdateDecvalDelayStream.close();
-        } catch (IOException e) {
+            sDatagramSocket.close();
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        sDatagramSocket.close();
         stopService(new Intent(MainActivity.this, ServerSocketService.class));
         executorService.shutdownNow();
-//        stopService();
+        sPacketProcessingThread.shutdownNow();
+        stopService();
     }
 
     @Override
@@ -265,33 +257,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     });
                 } else {
                     switchItem.setTitle(R.string.start_service_title);
-                    try {
-                        sDatagramSocket = new DatagramSocket();
-                        sDatagramSocket.setBroadcast(true);
-                        sDatagramSocket.setReuseAddress(true);
-                    } catch (SocketException e) {
-                        e.printStackTrace();
-                    }
-                    if (sIsGroupOwner) {
-                        for (int i = 0; i < 5; i++) {
-                            sendPacket(new PacketData("OWNER_ADDRESS", mMacAddress.getBytes()));
-                        }
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                AfterP2P.writeFile();
-                            }
-                        });
-                    }
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            AfterP2P.main(0);
-                        }
-                    });
-                    FinishLayer finishLayer = new FinishLayer();
-                    MainActivity.executorService.submit(finishLayer);
-//                    stopService();
+
+                    stopService();
                 }
             }
         });
@@ -309,7 +276,90 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 Toast.makeText(MainActivity.this, "isGroupOwner: " + sIsGroupOwner, Toast.LENGTH_SHORT).show();
             }
         });
+
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.start:
+                declaration.messageSize = new int[3];
+                declaration.srcSymbols = new int[3];
+                declaration.mPaddingSize = new int[3];
+
+                declaration.messageSize[declaration.currentLayer] = 1338;//268;
+                declaration.srcSymbols[declaration.currentLayer] = 200;//1000;
+                declaration.mPaddingSize[declaration.currentLayer] = 57;//457;
+                declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
+                declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
+
+
+
+                try {
+                    sDatagramSocket = new DatagramSocket();
+                    sDatagramSocket.setBroadcast(true);
+                    sDatagramSocket.setReuseAddress(true);
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                }
+                if (sIsGroupOwner) {
+                    for (int i = 0; i < 5; i++) {
+                        sendPacket(new PacketData("OWNER_ADDRESS", mMacAddress.getBytes()));
+                        sendPacket(new PacketData("OUTPUT_FILE_NAME", sFileName.getBytes()));
+                    }
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            AfterP2P.writeFile();
+                        }
+                    });
+                }
+                try {
+                    sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
+                    sRequestRecordDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_record.txt");
+                    sRequestDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_decval.txt");
+                    sUpdateDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/update_decval.txt");
+                    sResultStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/output/" + sFileName + ".txt");
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        AfterP2P.main(0);
+                    }
+                });
+                LogFragment.sLogText.setText("START!");
+                FinishLayer finishLayer = new FinishLayer();
+                MainActivity.executorService.submit(finishLayer);
+                Toast.makeText(MainActivity.this, "START", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.editFileName:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Edit File Name");
+                final EditText input = new EditText(this);
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setText(sFileName);
+                builder.setView(input);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        sFileName = input.getText().toString();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

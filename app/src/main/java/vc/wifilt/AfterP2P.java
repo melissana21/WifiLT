@@ -103,6 +103,25 @@ public class AfterP2P {
                 System.out.println("Request Decval Loss = " + MainActivity.sRequestDecvalLoss);
                 System.out.println("Update Decval Loss = " + MainActivity.sUpdateDecvalLoss);
                 System.out.println(" ");
+
+                String result = "收工! Total Time = " + MainActivity.sTotalTime
+                        + "\nRequest Record Total Time = " + MainActivity.sRequestRecordTotalTime
+                        + "\nRequest Decval Total Time = " + MainActivity.sRequestDecvalTotalTime
+                        + "\nUpdate Decval Total Time = " + MainActivity.sUpdateDecvalTotalTime
+                        + "\n# Request Record packet = " + MainActivity.num_RequestRecord
+                        + "\n# Request Decval packet = " + MainActivity.num_RequestDecval
+                        + "\n# Update Decval packet = " + MainActivity.num_UpdateDecval
+                        + "\nRequest Record Loss = " + MainActivity.sRequestRecordLoss
+                        + "\nRequest Decval Loss = " + MainActivity.sRequestDecvalLoss
+                        + "\nUpdate Decval Loss = " + MainActivity.sUpdateDecvalLoss
+                        + "\n";
+                try {
+                    MainActivity.sResultStream.write(result.getBytes());
+                    MainActivity.sResultStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                LogFragment.sLogText.setText(result);
                 break;
             }
         }
