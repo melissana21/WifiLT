@@ -39,7 +39,7 @@ public class FinishLayer extends Thread{
                 declaration.finishcount=declaration.srcSymbols[declaration.currentLayer]-unfinishcount;
                 System.out.print("finishcount");
                 System.out.println(declaration.finishcount);
-                LogFragment.sLogText.setText("Finish Count: " + declaration.finishcount);
+                MainActivity.setLogText("Finish Count: " + declaration.finishcount);
             }
         }
     }

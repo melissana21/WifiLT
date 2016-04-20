@@ -97,7 +97,7 @@ class ServerThread extends Thread {
                     MainActivity.executorService = Executors.newCachedThreadPool();
 
                     MainActivity.sFileName = new String(packetData.getData());
-                    LogFragment.sLogText.setText("Owner: " + MainActivity.mOwnerAddress + "\nFile Name: " + MainActivity.sFileName);
+                    MainActivity.setLogText("Owner: " + MainActivity.mOwnerAddress + "\nFile Name: " + MainActivity.sFileName);
                     continue;
                 }
                 if (!packetData.getDes().equals(MainActivity.mMacAddress)) {

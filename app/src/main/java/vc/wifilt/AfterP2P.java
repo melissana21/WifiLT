@@ -121,7 +121,7 @@ public class AfterP2P {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                LogFragment.sLogText.setText(result);
+                MainActivity.setLogText(result);
                 break;
             }
         }

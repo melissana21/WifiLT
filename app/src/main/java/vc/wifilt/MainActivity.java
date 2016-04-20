@@ -15,6 +15,8 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -109,6 +111,14 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static String sFileName = "default";
 
     protected static DatagramSocket sDatagramSocket;
+
+    public static Handler UIHandler;
+    static {
+        UIHandler = new Handler(Looper.getMainLooper());
+    }
+    public static void runOnUI(Runnable runnable) {
+        UIHandler.post(runnable);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -331,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                         AfterP2P.main(0);
                     }
                 });
-                LogFragment.sLogText.setText("START!");
+                setLogText("START!");
                 FinishLayer finishLayer = new FinishLayer();
                 MainActivity.executorService.submit(finishLayer);
                 Toast.makeText(MainActivity.this, "START", Toast.LENGTH_SHORT).show();
@@ -713,5 +723,14 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         } else {
             Log.v(TAG, "Broadcast failed");
         }
+    }
+
+    protected static void setLogText(final String string) {
+        runOnUI(new Runnable() {
+            @Override
+            public void run() {
+                LogFragment.sLogText.setText(string);
+            }
+        });
     }
 }
