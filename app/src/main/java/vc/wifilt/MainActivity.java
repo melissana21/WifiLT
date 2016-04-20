@@ -284,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.start:
+                declaration.run();
                 declaration.messageSize = new int[3];
                 declaration.srcSymbols = new int[3];
                 declaration.mPaddingSize = new int[3];

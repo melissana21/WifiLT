@@ -126,4 +126,30 @@ public class declaration {
     double read_Time = 0;
 
     static int finishcount =0;
+
+    public static void run() {
+        nodeNum = 2;
+        globalFinish = 0;
+        layer = 0;
+        currentLayer = 0;
+
+        requestcount=0;
+
+        selfDecodedSymbolsRecord= new int[nodeNum][];
+        decRecord = new int[nodeNum][];
+        LocalRead= new int[nodeNum];
+        GlobalRead= new int[nodeNum];
+        Broadcast= new int[nodeNum];
+        LocalWrite= new int[nodeNum];
+        GlobalWrite = new int[nodeNum];
+        GlobalTryWrite = new int[nodeNum];
+        sDecodedSymbols = new int[nodeNum];
+        decode_num = new int [nodeNum][];
+
+        elementNum = new int[nodeNum];  // Used in PrintHello
+        rippleStep = new int[nodeNum];  // Used in PrintHello  init=1
+        RippleSize = new int[nodeNum];  // Used in PrintHello
+
+        finishcount = 0;
+    }
 }
