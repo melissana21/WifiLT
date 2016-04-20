@@ -1,10 +1,13 @@
 package vc.wifilt;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -18,6 +21,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -118,6 +122,34 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     }
     public static void runOnUI(Runnable runnable) {
         UIHandler.post(runnable);
+    }
+
+    // Storage Permissions
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
+    /**
+     * Checks if the app has permission to write to device storage
+     *
+     * If the app does not has permission then the user will be prompted to grant permissions
+     *
+     * @param activity
+     */
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
     }
 
     @Override
@@ -305,7 +337,18 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
                 declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
 
+                sRequestRecordLoss = 0;
+                sRequestDecvalLoss = 0;
+                sUpdateDecvalLoss = 0;
 
+                sUpdateDecvalTotalTime = 0;
+                sRequestRecordTotalTime = 0;
+                sRequestDecvalTotalTime = 0;
+                sTotalTime = 0;
+
+                num_RequestRecord = 0;
+                num_RequestDecval = 0;
+                num_UpdateDecval = 0;
 
                 try {
                     sDatagramSocket = new DatagramSocket();
@@ -331,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     sRequestRecordDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_record.txt");
                     sRequestDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_decval.txt");
                     sUpdateDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/update_decval.txt");
-                    sResultStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/output/" + sFileName + ".txt");
+                    sResultStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/" + sFileName + ".txt");
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
