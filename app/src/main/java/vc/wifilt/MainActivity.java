@@ -96,6 +96,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static FileOutputStream sUpdateDecvalDelayStream;
     protected static FileOutputStream sResultStream;
 
+    protected static boolean firstcountflag = true;
+    protected static long sCacheSpendTime = 0;
+
     protected static int sRequestRecordLoss = 0;
     protected static int sRequestDecvalLoss = 0;
     protected static int sUpdateDecvalLoss = 0;

@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.io.*;
 
@@ -97,13 +99,46 @@ public class readEncodedData {
                         declaration.GlobalTryWrite[node_ID]++;
                         if(declaration.globalDecodedSymbolsRecord[index - 1] == 0){
                             if (!MainActivity.sIsGroupOwner) {
-                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", decTemp);
+                               /* packetData = new PacketData("UPDATE_GLOBAL_DECVAL", decTemp);
                                 packetData.setPosition(((index - 1) * declaration.messageSize[declaration.currentLayer]));
                                 packetData.setDes(MainActivity.mOwnerAddress);
                                 MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
 //                                output = "request: " + System.currentTimeMillis() + "\n";
 //                                MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
-                                MainActivity.sendPacket(packetData);
+                                MainActivity.sendPacket(packetData);*/
+                                int sPacketTimeout = 1000;
+                                Map<Integer, byte[]> UpdateMap = new HashMap<>();
+                                UpdateMap.put(index-1, decTemp);
+                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                                try{
+                                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+                                    objectOutputStream.writeObject(UpdateMap);
+                                }catch (IOException ex){
+                                    ex.printStackTrace();
+                                }
+                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
+                                packetData.setPosition(0);
+                                packetData.setDes(MainActivity.mOwnerAddress);
+                                do {
+                                    MainActivity.sUpdateDecvalLoss++;
+                                    MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
+                                    MainActivity.sendPacket(packetData);
+                                    synchronized (MainActivity.waitingLock) {
+                                        try {
+                                            MainActivity.waitingLock.wait(sPacketTimeout);
+                                        } catch (InterruptedException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+                                } while (!declaration.isGlobalDecvalUpdate[0]);
+                                declaration.isGlobalDecvalUpdate[0] = false;
+                                MainActivity.sUpdateDecvalLoss--;
+
+                                UpdateMap = new HashMap<>();
+
+
+
+
                             }
                             //System.out.println(declaration.decVal);
                             //(declaration.decVal + ((index - 1) * declaration.messageSize)), decTemp, declaration.messageSize);
@@ -117,13 +152,13 @@ public class readEncodedData {
                         synchronized (declaration.globalDecodedSymbolsRecord) {
                             declaration.globalDecodedSymbolsRecord[index - 1] = 1;
                         }
-                        if (!MainActivity.sIsGroupOwner) {
+                       /* if (!MainActivity.sIsGroupOwner) {
                             packetData = new PacketData("UPDATE_GLOBAL_RECORD", String.valueOf(1).getBytes());
                             packetData.setPosition(index - 1);
                             packetData.setDes(MainActivity.mOwnerAddress);
                             Log.v("Enc", "position : " + (index - 1));
                             MainActivity.sendPacket(packetData);
-                        }
+                        }*/
                         System.out.print(index);
                         System.out.println(" is degree1 !");
                         declaration.sDecodedSymbols[node_ID]++;

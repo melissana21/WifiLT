@@ -14,6 +14,7 @@ public class FinishLayer extends Thread{
         while(true){
             if(finish == 1){
                 declaration.globalFinish = 1;
+                MainActivity.sCacheSpendTime = System.currentTimeMillis()-MainActivity.sCacheSpendTime;
                 break;
             }
             finish = 1;
@@ -25,6 +26,10 @@ public class FinishLayer extends Thread{
                 if(declaration.globalDecodedSymbolsRecord[n] == 0){
 
                     unfinishcount++;
+                    if(declaration.srcSymbols[declaration.currentLayer]-unfinishcount == 1 && MainActivity.firstcountflag == true) {
+                        MainActivity.sCacheSpendTime = System.currentTimeMillis();
+                        MainActivity.firstcountflag = false;
+                    }
                     finish = 0;
                 }
             }

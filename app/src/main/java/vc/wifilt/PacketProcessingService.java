@@ -161,12 +161,31 @@ public class PacketProcessingService extends Thread {
                     if (!MainActivity.sIsGroupOwner) {
                         return;
                     }
-                    synchronized (declaration.decVal) {
-                        System.arraycopy(packetData.getData(), 0, declaration.decVal, packetData.getPosition(), declaration.messageSize[declaration.currentLayer]);
+
+                    byteArrayInputStream = new ByteArrayInputStream(packetData.getData());
+                    try {
+                        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+                        Map<Integer, byte[]> UpdateMap = (Map<Integer, byte[]>) objectInputStream.readObject();
+                        for (Integer key : UpdateMap.keySet()) {
+                            Log.v("update map", "receive key: " + key);
+                            synchronized (declaration.decVal) {
+                                System.arraycopy(UpdateMap.get(key),
+                                        0,
+                                        declaration.decVal,
+                                        declaration.messageSize[declaration.currentLayer] * key,
+                                        declaration.messageSize[declaration.currentLayer]);
+                            }
+//                            synchronized (declaration.globalDecodedSymbolsRecord) {
+//                                declaration.globalDecodedSymbolsRecord[key] = 1;
+                            declaration.globalDecodedSymbolsRecord[key] = 1;
+//                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
-                    synchronized (declaration.globalDecodedSymbolsRecord) {
-                        declaration.globalDecodedSymbolsRecord[packetData.getPosition() / declaration.messageSize[declaration.currentLayer]] = 1;
-                    }
+
                     returnData = new PacketData("SUCESS_UPDATE_DECVAL", String.valueOf(1).getBytes());
                     returnData.setPosition(packetData.getPosition());
                     returnData.setDes(packetData.getOri());
@@ -331,7 +350,7 @@ public class PacketProcessingService extends Thread {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    declaration.isGlobalDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])] = true;
+                    declaration.isGlobalDecvalUpdate[0] = true;
                     synchronized (MainActivity.waitingLock) {
 //                        MainActivity.isWaiting = false;
                         MainActivity.waitingLock.notify();

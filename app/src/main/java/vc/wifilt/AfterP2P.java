@@ -182,6 +182,16 @@ public class AfterP2P {
                 break;
             }
         }
+
+        String result = "Cache Spend Time (from finish count =1 to 200) = " + MainActivity.sCacheSpendTime;
+        try {
+            MainActivity.sResultStream.write(result.getBytes());
+            MainActivity.sResultStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        MainActivity.setLogText(result);
+
         Log.v("writeFile", "start");
         String index = Integer.toString(declaration.currentLayer);
         String Outputfilename=MainActivity.MainContext.getExternalFilesDir(null).getAbsolutePath() +declaration.Output_FileName+"_cache"+declaration.Output_Extension;
