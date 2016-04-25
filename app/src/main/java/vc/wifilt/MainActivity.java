@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static ExecutorService executorService;
     protected static ExecutorService sPacketProcessingThread;
 
+    protected static FileOutputStream sFileTimeStampRecord;
     protected static FileOutputStream sFileOutputStream;
     protected static FileOutputStream sRequestRecordDelayStream;
     protected static FileOutputStream sRequestDecvalDelayStream;
@@ -261,6 +262,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected void onDestroy() {
         super.onDestroy();
         try {
+            sFileTimeStampRecord.close();
             sFileOutputStream.close();
             sRequestRecordDelayStream.close();
             sRequestDecvalDelayStream.close();
@@ -373,6 +375,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     });
                 }
                 try {
+                    sFileTimeStampRecord = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath()+ "/TimeStampRecord.txt");
                     sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
                     sRequestRecordDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_record.txt");
                     sRequestDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_decval.txt");

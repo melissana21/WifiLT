@@ -20,7 +20,7 @@ public class readEncodedData {
 
 
         PacketData packetData;
-        String output;
+        String output = "";
 
         int decTime = 0;
         int terminate = PacketNum;
@@ -116,13 +116,24 @@ public class readEncodedData {
                                 }catch (IOException ex){
                                     ex.printStackTrace();
                                 }
+                                boolean loss = false;
                                 packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
                                 packetData.setPosition(0);
                                 packetData.setDes(MainActivity.mOwnerAddress);
                                 do {
+
                                     MainActivity.sUpdateDecvalLoss++;
                                     MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
                                     MainActivity.sendPacket(packetData);
+
+                                    if(loss==false){
+                                        output = System.currentTimeMillis()+"   UPDATE_GLOBAL_DECVAL : Map Size = " +UpdateMap.size()+ "\n";
+                                        loss = true;
+                                    }
+                                    else{
+                                        output=output+System.currentTimeMillis()+"  loss \n";
+                                    }
+
                                     synchronized (MainActivity.waitingLock) {
                                         try {
                                             MainActivity.waitingLock.wait(sPacketTimeout);
@@ -133,6 +144,13 @@ public class readEncodedData {
                                 } while (!declaration.isGlobalDecvalUpdate[0]);
                                 declaration.isGlobalDecvalUpdate[0] = false;
                                 MainActivity.sUpdateDecvalLoss--;
+
+
+                                try {
+                                    MainActivity.sFileTimeStampRecord.write(output.getBytes());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
 
                                 UpdateMap = new HashMap<>();
 
