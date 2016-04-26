@@ -88,7 +88,7 @@ public class PacketProcessingService extends Thread {
                     returnData.setDes(packetData.getOri());
                     MainActivity.sendPacket(returnData);
 //                    Log.v(TAG, "send answer global record: " + index);
-                    output = System.currentTimeMillis()+"  "+type+"\n";
+                    output = System.currentTimeMillis()+"\t"+type+"\n";
                     try {
                         MainActivity.sFileTimeStampRecord.write(output.getBytes());
                     } catch (IOException e) {
@@ -121,7 +121,7 @@ public class PacketProcessingService extends Thread {
                         e.printStackTrace();
                     }
 
-                    output = System.currentTimeMillis()+"  "+type+": Map Size = "+valueMap.size()+"\n";
+                    output = System.currentTimeMillis()+"\t"+type+": Map Size = "+valueMap.size()+"\n";
                     try {
                         MainActivity.sFileTimeStampRecord.write(output.getBytes());
                     } catch (IOException e) {
@@ -200,7 +200,13 @@ public class PacketProcessingService extends Thread {
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
-                    output = System.currentTimeMillis()+"  "+type+": Map Size = "+ UpdateMap.size()+"\n";
+                    output = System.currentTimeMillis()+"\t"+type+": Map Size = "+ UpdateMap.size()+"\n";
+
+                    try {
+                        MainActivity.sFileTimeStampRecord.write(output.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
                     returnData = new PacketData("SUCESS_UPDATE_DECVAL", String.valueOf(1).getBytes());
                     returnData.setPosition(packetData.getPosition());
@@ -223,7 +229,7 @@ public class PacketProcessingService extends Thread {
                         return;
                     }
 //                    output = (System.currentTimeMillis() - MainActivity.sRequestRecordTime) + "\n";
-                    output = System.currentTimeMillis()+"  "+type+"\n";
+                    output = System.currentTimeMillis()+"\t"+type+"\n";
 
                     MainActivity.sRequestRecordTotalTime = MainActivity.sRequestRecordTotalTime + (System.currentTimeMillis() - MainActivity.sRequestRecordTime);
                     MainActivity.num_RequestRecord = MainActivity.num_RequestRecord + 1;
@@ -332,7 +338,7 @@ public class PacketProcessingService extends Thread {
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
-                    output = System.currentTimeMillis()+"  "+type + ": Map Size = "+answerMap.size()+"\n";
+                    output = System.currentTimeMillis()+"\t"+type + ": Map Size = "+answerMap.size()+"\n";
                     try {
                         //MainActivity.sRequestDecvalDelayStream.write(output.getBytes());
                         MainActivity.sFileTimeStampRecord.write(output.getBytes());
@@ -362,7 +368,7 @@ public class PacketProcessingService extends Thread {
                         return;
                     }
                    // output = (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime) + "\n";
-                    output = System.currentTimeMillis()+"  "+type+"\n";
+                    output = System.currentTimeMillis()+"\t"+type+"\n";
 
                     MainActivity.sUpdateDecvalTotalTime = MainActivity.sUpdateDecvalTotalTime + (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime);
                     MainActivity.num_UpdateDecval = MainActivity.num_UpdateDecval + 1;

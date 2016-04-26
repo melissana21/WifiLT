@@ -61,11 +61,11 @@ public class LTDistributed_decoder {
 //                    e.printStackTrace();
 //                }
                 if(Rloss == false){
-                    output = System.currentTimeMillis()+"   REQUEST_GLOBAL_RECORD \n";
+                    output = System.currentTimeMillis()+"\tREQUEST_GLOBAL_RECORD \n";
                     Rloss = true;
                 }
                 else{
-                    output=output+System.currentTimeMillis()+"  loss \n";
+                    output=output+System.currentTimeMillis()+"\tloss \n";
                 }
                 MainActivity.sendPacket(packetData);
 //                Log.v("packet delay", "request: " + System.currentTimeMillis());
@@ -126,11 +126,11 @@ public class LTDistributed_decoder {
                     MainActivity.sRequestDecvalTime = System.currentTimeMillis();
                     MainActivity.sendPacket(packetData);
                     if(Dloss == false){
-                        output = System.currentTimeMillis()+"  REQUEST_GLOBAL_DECVAL\n";
+                        output = System.currentTimeMillis()+"\tREQUEST_GLOBAL_DECVAL\n";
                         Dloss = true;
                     }
                     else{
-                        output=output+System.currentTimeMillis()+"  loss \n";
+                        output=output+System.currentTimeMillis()+"\tloss \n";
                     }
 
                     synchronized (MainActivity.waitingLock) {
@@ -372,11 +372,11 @@ public class LTDistributed_decoder {
                                         MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
                                         MainActivity.sendPacket(packetData);
                                         if(Uloss == false){
-                                            output = System.currentTimeMillis()+"   UPDATE_GLOBAL_DECVAL : Map Size = "+ UpdateMap.size()+ "\n";
+                                            output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ UpdateMap.size()+ "\n";
                                             Uloss = true;
                                         }
                                         else{
-                                            output=output+System.currentTimeMillis()+"  loss \n";
+                                            output=output+System.currentTimeMillis()+"\tloss \n";
                                         }
                                         synchronized (MainActivity.waitingLock) {
                                             try {
@@ -457,11 +457,11 @@ public class LTDistributed_decoder {
                 MainActivity.sendPacket(packetData);
 
                 if(Uloss == false){
-                    output = System.currentTimeMillis()+"   UPDATE_GLOBAL_DECVAL : Map Size = "+ UpdateMap.size()+"\n";
+                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ UpdateMap.size()+"\n";
                     Uloss = true;
                 }
                 else{
-                    output=output+System.currentTimeMillis()+"  loss \n";
+                    output=output+System.currentTimeMillis()+"\tloss \n";
                 }
 
                 synchronized (MainActivity.waitingLock) {

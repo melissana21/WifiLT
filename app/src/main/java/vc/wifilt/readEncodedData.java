@@ -127,11 +127,11 @@ public class readEncodedData {
                                     MainActivity.sendPacket(packetData);
 
                                     if(loss==false){
-                                        output = System.currentTimeMillis()+"   UPDATE_GLOBAL_DECVAL : Map Size = " +UpdateMap.size()+ "\n";
+                                        output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = " +UpdateMap.size()+ "\n";
                                         loss = true;
                                     }
                                     else{
-                                        output=output+System.currentTimeMillis()+"  loss \n";
+                                        output=output+System.currentTimeMillis()+"\tloss \n";
                                     }
 
                                     synchronized (MainActivity.waitingLock) {

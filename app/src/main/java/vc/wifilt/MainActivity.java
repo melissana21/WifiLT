@@ -346,6 +346,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 sRequestDecvalLoss = 0;
                 sUpdateDecvalLoss = 0;
 
+                sCacheSpendTime = 0;
+                firstcountflag = true;
+
+
                 sUpdateDecvalTotalTime = 0;
                 sRequestRecordTotalTime = 0;
                 sRequestDecvalTotalTime = 0;
