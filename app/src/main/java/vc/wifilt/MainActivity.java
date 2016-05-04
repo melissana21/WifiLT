@@ -211,11 +211,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
 //        Log.v(TAG, "Read: " + new String(mHeaderInfo));
 
 
-//        mBroadcastAddress = getBroadcastAddress(wifiIpAddress(this));
-//        mMacAddress = getMacAddress(this);
+
         int node_ID = 0;
         //// set node_ID(0,1)  cache : -1(owner)
-//        startService(new Intent(MainActivity.this, ServerSocketService.class));
+
         LocalBroadcastManager.getInstance(MainActivity.this)
                 .registerReceiver(new BroadcastReceiver() {
                     @Override
@@ -420,6 +419,14 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     }
                 });
                 builder.show();
+                return true;
+
+            case R.id.useWiFi:
+                mBroadcastAddress = getBroadcastAddress(wifiIpAddress(this));
+                mMacAddress = getMacAddress(this);
+                startService(new Intent(MainActivity.this, ServerSocketService.class));
+                Toast.makeText(MainActivity.this, "Start Wi-Fi Edition", Toast.LENGTH_SHORT).show();
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
