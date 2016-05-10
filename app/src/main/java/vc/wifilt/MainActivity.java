@@ -58,7 +58,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -340,6 +342,10 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 declaration.mPaddingSize[declaration.currentLayer] = 57;//457;
                 declaration.decVal = new byte[declaration.messageSize[declaration.currentLayer]*declaration.srcSymbols[declaration.currentLayer]];
                 declaration.globalDecodedSymbolsRecord= new int[declaration.srcSymbols[declaration.currentLayer]]; //init=0
+
+                declaration.isNeedRequest = false;
+                declaration.selfdecoding = false;
+                declaration.UpdateMap = new HashMap<>();
 
                 sRequestRecordLoss = 0;
                 sRequestDecvalLoss = 0;

@@ -76,7 +76,7 @@ public class readEncodedData {
 
                 if(d ==1){
                     int index=Integer.valueOf(AfterSplit[5]).intValue();
-                    if (declaration.decRecord[node_ID][index-1] ==0){
+                    if (declaration.selfDecodedSymbolsRecord[node_ID][index-1]==0){//declaration.decRecord[node_ID][index-1] ==0){
 
                         declaration.PData_currentDegree[node_ID][decTime] =d;
                         declaration.PData_originalDegree[node_ID][decTime] = d;
@@ -107,52 +107,53 @@ public class readEncodedData {
 //                                MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
                                 MainActivity.sendPacket(packetData);*/
                                 int sPacketTimeout = 1000;
-                                Map<Integer, byte[]> UpdateMap = new HashMap<>();
-                                UpdateMap.put(index-1, decTemp);
-                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                                try{
-                                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-                                    objectOutputStream.writeObject(UpdateMap);
-                                }catch (IOException ex){
-                                    ex.printStackTrace();
-                                }
-                                boolean loss = false;
-                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
-                                packetData.setPosition(0);
-                                packetData.setDes(MainActivity.mOwnerAddress);
-                                do {
-
-                                    MainActivity.sUpdateDecvalLoss++;
-                                    MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
-                                    MainActivity.sendPacket(packetData);
-
-                                    if(loss==false){
-                                        output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = " +UpdateMap.size()+ "\n";
-                                        loss = true;
-                                    }
-                                    else{
-                                        output=output+System.currentTimeMillis()+"\tloss \n";
-                                    }
-
-                                    synchronized (MainActivity.waitingLock) {
-                                        try {
-                                            MainActivity.waitingLock.wait(sPacketTimeout);
-                                        } catch (InterruptedException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                    }
-                                } while (!declaration.isGlobalDecvalUpdate[0]);
-                                declaration.isGlobalDecvalUpdate[0] = false;
-                                MainActivity.sUpdateDecvalLoss--;
-
-
-                                try {
-                                    MainActivity.sFileTimeStampRecord.write(output.getBytes());
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                                UpdateMap = new HashMap<>();
+                                //Map<Integer, byte[]> UpdateMap = new HashMap<>();
+                                declaration.UpdateMap.put(index-1, decTemp);
+                                declaration.selfdecoding=true;
+//                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                                try{
+//                                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+//                                    objectOutputStream.writeObject(declaration.UpdateMap);
+//                                }catch (IOException ex){
+//                                    ex.printStackTrace();
+//                                }
+//                                boolean loss = false;
+//                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
+//                                packetData.setPosition(0);
+//                                packetData.setDes(MainActivity.mOwnerAddress);
+//                                do {
+//
+//                                    MainActivity.sUpdateDecvalLoss++;
+//                                    MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
+//                                    MainActivity.sendPacket(packetData);
+//
+//                                    if(loss==false){
+//                                        output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = " +declaration.UpdateMap.size()+ "\n";
+//                                        loss = true;
+//                                    }
+//                                    else{
+//                                        output=output+System.currentTimeMillis()+"\tloss \n";
+//                                    }
+//
+//                                    synchronized (MainActivity.waitingLock) {
+//                                        try {
+//                                            MainActivity.waitingLock.wait(sPacketTimeout);
+//                                        } catch (InterruptedException e1) {
+//                                            e1.printStackTrace();
+//                                        }
+//                                    }
+//                                } while (!declaration.isGlobalDecvalUpdate[0]);
+//                                declaration.isGlobalDecvalUpdate[0] = false;
+//                                MainActivity.sUpdateDecvalLoss--;
+//
+//
+//                                try {
+//                                    MainActivity.sFileTimeStampRecord.write(output.getBytes());
+//                                } catch (IOException e) {
+//                                    e.printStackTrace();
+//                                }
+//
+//                                declaration.UpdateMap = new HashMap<>();
 
 
 
@@ -205,7 +206,7 @@ public class readEncodedData {
 
                     decTime++;
                 }
-               fi.close();
+                fi.close();
             }catch (IOException e) {
 //                e.printStackTrace();
             }

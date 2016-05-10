@@ -2,6 +2,9 @@ package vc.wifilt;
 
 import android.os.Environment;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by melissa on 2016/1/4.
  */
@@ -12,6 +15,10 @@ public class declaration {
     static int[] EncPacketNum;
     static int SVC_LayerNum;
     static int currentLayer = 0;
+
+    static Boolean isNeedRequest = false;
+    static Boolean selfdecoding = false;
+    static Map<Integer, byte[]> UpdateMap = new HashMap<>();
 
     static int[] messageSize;
     static int[] srcSymbols;

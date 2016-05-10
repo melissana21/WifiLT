@@ -79,52 +79,52 @@ public class AfterP2P {
             System.out.println(node_ID);
 
 
-            if (declaration.globalFinish == 0) {
-                LTDistributed_decoder.main(declaration.elementNum[node_ID], declaration.rippleStep[node_ID], declaration.currentLayer, node_ID);
-                if(declaration.RippleSize[node_ID]>0 && declaration.sDecodedSymbols[node_ID] < declaration.srcSymbols[declaration.currentLayer]){
-                    declaration.rippleStep[node_ID]++;
-                }
+            // if (declaration.globalFinish == 0) {
+            LTDistributed_decoder.main(declaration.elementNum[node_ID], declaration.rippleStep[node_ID], declaration.currentLayer, node_ID);
+            //     if(declaration.RippleSize[node_ID]>0 && declaration.sDecodedSymbols[node_ID] < declaration.srcSymbols[declaration.currentLayer]){
+            //         declaration.rippleStep[node_ID]++;
+            //     }
 
 
 
+            //}
+            //else {
+            MainActivity.sTotalTime = System.currentTimeMillis() - MainActivity.sTotalTime;
+            System.out.println("收工! Total Time = " + MainActivity.sTotalTime);
+            System.out.println("Request Record Total Time = " + MainActivity.sRequestRecordTotalTime);
+            System.out.println("Request Decval Total Time = " + MainActivity.sRequestDecvalTotalTime);
+            System.out.println("Update Decval Total Time = " + MainActivity.sUpdateDecvalTotalTime);
+
+            System.out.println("# Request Record packet = " + MainActivity.num_RequestRecord);
+            System.out.println("# Request Decval packet = " + MainActivity.num_RequestDecval);
+            System.out.println("# Update Decval packet = " + MainActivity.num_UpdateDecval);
+
+            System.out.println("Request Record Loss = " + MainActivity.sRequestRecordLoss);
+            System.out.println("Request Decval Loss = " + MainActivity.sRequestDecvalLoss);
+            System.out.println("Update Decval Loss = " + MainActivity.sUpdateDecvalLoss);
+            System.out.println(" ");
+
+            String result = "收工! Total Time = " + MainActivity.sTotalTime
+                    + "\nRequest Record Total Time = " + MainActivity.sRequestRecordTotalTime
+                    + "\nRequest Decval Total Time = " + MainActivity.sRequestDecvalTotalTime
+                    + "\nUpdate Decval Total Time = " + MainActivity.sUpdateDecvalTotalTime
+                    + "\n# Request Record packet = " + MainActivity.num_RequestRecord
+                    + "\n# Request Decval packet = " + MainActivity.num_RequestDecval
+                    + "\n# Update Decval packet = " + MainActivity.num_UpdateDecval
+                    + "\nRequest Record Loss = " + MainActivity.sRequestRecordLoss
+                    + "\nRequest Decval Loss = " + MainActivity.sRequestDecvalLoss
+                    + "\nUpdate Decval Loss = " + MainActivity.sUpdateDecvalLoss
+                    + "\n";
+            try {
+                MainActivity.sResultStream.write(result.getBytes());
+                MainActivity.sResultStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            else {
-                MainActivity.sTotalTime = System.currentTimeMillis() - MainActivity.sTotalTime;
-                System.out.println("收工! Total Time = " + MainActivity.sTotalTime);
-                System.out.println("Request Record Total Time = " + MainActivity.sRequestRecordTotalTime);
-                System.out.println("Request Decval Total Time = " + MainActivity.sRequestDecvalTotalTime);
-                System.out.println("Update Decval Total Time = " + MainActivity.sUpdateDecvalTotalTime);
-
-                System.out.println("# Request Record packet = " + MainActivity.num_RequestRecord);
-                System.out.println("# Request Decval packet = " + MainActivity.num_RequestDecval);
-                System.out.println("# Update Decval packet = " + MainActivity.num_UpdateDecval);
-
-                System.out.println("Request Record Loss = " + MainActivity.sRequestRecordLoss);
-                System.out.println("Request Decval Loss = " + MainActivity.sRequestDecvalLoss);
-                System.out.println("Update Decval Loss = " + MainActivity.sUpdateDecvalLoss);
-                System.out.println(" ");
-
-                String result = "收工! Total Time = " + MainActivity.sTotalTime
-                        + "\nRequest Record Total Time = " + MainActivity.sRequestRecordTotalTime
-                        + "\nRequest Decval Total Time = " + MainActivity.sRequestDecvalTotalTime
-                        + "\nUpdate Decval Total Time = " + MainActivity.sUpdateDecvalTotalTime
-                        + "\n# Request Record packet = " + MainActivity.num_RequestRecord
-                        + "\n# Request Decval packet = " + MainActivity.num_RequestDecval
-                        + "\n# Update Decval packet = " + MainActivity.num_UpdateDecval
-                        + "\nRequest Record Loss = " + MainActivity.sRequestRecordLoss
-                        + "\nRequest Decval Loss = " + MainActivity.sRequestDecvalLoss
-                        + "\nUpdate Decval Loss = " + MainActivity.sUpdateDecvalLoss
-                        + "\n";
-                try {
-                    MainActivity.sResultStream.write(result.getBytes());
-                    MainActivity.sResultStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                MainActivity.setLogText(result);
-                break;
-            }
+            MainActivity.setLogText(result);
+            break;
         }
+        //}
         //for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
 //        PrintHello.set(node_ID);
 //        Thread t1 = new PrintHello(); // 產生Thread物件

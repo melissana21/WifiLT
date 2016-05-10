@@ -208,7 +208,7 @@ public class PacketProcessingService extends Thread {
                         e.printStackTrace();
                     }
 
-                    returnData = new PacketData("SUCESS_UPDATE_DECVAL", String.valueOf(1).getBytes());
+                    returnData = new PacketData("SUCESS_UPDATE_DECVAL",  MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());//String.valueOf(1).getBytes());
                     returnData.setPosition(packetData.getPosition());
                     returnData.setDes(packetData.getOri());
                     MainActivity.sendPacket(returnData);
@@ -367,7 +367,11 @@ public class PacketProcessingService extends Thread {
                             || declaration.isGlobalDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]) {
                         return;
                     }
-                   // output = (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime) + "\n";
+                    // output = (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime) + "\n";
+                    int[] Newdata = MainActivity.convertStringToIntArray(new String(packetData.getData()));
+                    synchronized (declaration.globalDecodedSymbolsRecord) {
+                        declaration.globalDecodedSymbolsRecord = Newdata;
+                    }
                     output = System.currentTimeMillis()+"\t"+type+"\n";
 
                     MainActivity.sUpdateDecvalTotalTime = MainActivity.sUpdateDecvalTotalTime + (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime);
@@ -375,7 +379,7 @@ public class PacketProcessingService extends Thread {
 
 
                     try {
-                       // MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
+                        // MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
                         MainActivity.sFileTimeStampRecord.write(output.getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
