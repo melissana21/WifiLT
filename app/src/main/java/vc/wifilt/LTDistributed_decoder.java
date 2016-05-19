@@ -16,7 +16,7 @@ import java.util.Map;
 public class LTDistributed_decoder {
 
     private static int sPacketTimeout = 1000;
-    static int maxRequestNumber = 10;
+    static int maxRequestNumber = 1;
     static int[] indices = new int[maxRequestNumber];
     static int currentIndex = 0;
 
@@ -43,36 +43,41 @@ public class LTDistributed_decoder {
             packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
             packetData.setPosition(0);
             packetData.setDes(MainActivity.mOwnerAddress);
-            do {
-                MainActivity.sUpdateDecvalLoss++;
-                MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
+
+            for (Integer key : declaration.UpdateMap.keySet()) {
+                Log.v("LTD", "send key1: " + key);
+                MainActivity.setLogText("send key1: " + key);
+            }
+//            do {
+//                MainActivity.sUpdateDecvalLoss++;
+//                MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
                 MainActivity.sendPacket(packetData);
 
-                if(Uloss == false){
-                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+"\n";
-                    Uloss = true;
-                }
-                else{
-                    output=output+System.currentTimeMillis()+"\tloss \n";
-                }
+//                if(Uloss == false){
+//                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+"\n";
+//                    Uloss = true;
+//                }
+//                else{
+//                    output=output+System.currentTimeMillis()+"\tloss \n";
+//                }
+//
+//                synchronized (MainActivity.waitingLock) {
+//                    try {
+//                        MainActivity.waitingLock.wait(sPacketTimeout);
+//                    } catch (InterruptedException e1) {
+//                        e1.printStackTrace();
+//                    }
+//                }
+//            } while (!declaration.isGlobalDecvalUpdate[0]);
+//            declaration.isGlobalDecvalUpdate[0] = false;
+//            MainActivity.sUpdateDecvalLoss--;
 
-                synchronized (MainActivity.waitingLock) {
-                    try {
-                        MainActivity.waitingLock.wait(sPacketTimeout);
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            } while (!declaration.isGlobalDecvalUpdate[0]);
-            declaration.isGlobalDecvalUpdate[0] = false;
-            MainActivity.sUpdateDecvalLoss--;
 
-
-            try {
-                MainActivity.sFileTimeStampRecord.write(output.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                MainActivity.sFileTimeStampRecord.write(output.getBytes());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
 
             declaration.UpdateMap = new HashMap<>();
         }
@@ -101,126 +106,157 @@ public class LTDistributed_decoder {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-        if(declaration.selfdecoding==false && declaration.UpdateMap.size()==0) {
-            boolean Rloss = false;
-            if (!MainActivity.sIsGroupOwner && declaration.isNeedRequest == true) {
-                packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(-1).getBytes());
+//        if(declaration.selfdecoding==false && declaration.UpdateMap.size()==0) {
+//            Map<Integer, byte[]> valueMap = new HashMap<>();
+//            for (int i = 0; i < declaration.globalDecodedSymbolsRecord.length; i++) {
+//                System.out.print(declaration.globalDecodedSymbolsRecord[i]);
+//                if (declaration.globalDecodedSymbolsRecord[i] != 0) {
+//                    valueMap.put(i, Arrays.copyOfRange(declaration.decVal,
+//                            declaration.messageSize[declaration.currentLayer] * i,
+//                            declaration.messageSize[declaration.currentLayer] * (i + 1)));
+//                    currentIndex++;
+//                    System.out.print("currentIndex =  "+currentIndex+"\n");
+//                }
+//                if (currentIndex == maxRequestNumber || i == declaration.globalDecodedSymbolsRecord.length-1) {
+//                    System.out.print("Send Packet \n");
+//                    if (currentIndex == 0) {
+//                        break;
+//                    }
+//                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                    try {
+//                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+//                        objectOutputStream.writeObject(valueMap);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
+//                    packetData.setPosition(0);
+//                    packetData.setDes(MainActivity.mOwnerAddress);
+//                    MainActivity.sendPacket(packetData);
+//                    valueMap = new HashMap<>();
+//                    currentIndex = 0;
+//                }
+//            }
+//        }
+//            boolean Rloss = false;
+//            if (!MainActivity.sIsGroupOwner && declaration.isNeedRequest == true) {
+//                packetData = new PacketData("REQUEST_GLOBAL_RECORD", String.valueOf(-1).getBytes());
 //                    MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());
-                packetData.setDes(MainActivity.mOwnerAddress);
+//                packetData.setDes(MainActivity.mOwnerAddress);
 //                        MainActivity.isWaiting = true;
-                do {
-                    MainActivity.sRequestRecordLoss++;
-                    MainActivity.sRequestRecordTime = System.currentTimeMillis();
+//                do {
+//                    MainActivity.sRequestRecordLoss++;
+//                    MainActivity.sRequestRecordTime = System.currentTimeMillis();
 //                output = "request: " + System.currentTimeMillis() + "\n";
 //                try {
 //                    MainActivity.sRequestRecordDelayStream.write(output.getBytes());
 //                } catch (IOException e) {
 //                    e.printStackTrace();
 //                }
-                    if (Rloss == false) {
-                        output = System.currentTimeMillis() + "\tREQUEST_GLOBAL_RECORD \n";
-                        Rloss = true;
-                    } else {
-                        output = output + System.currentTimeMillis() + "\tloss \n";
-                    }
-                    MainActivity.sendPacket(packetData);
+//                    if (Rloss == false) {
+//                        output = System.currentTimeMillis() + "\tREQUEST_GLOBAL_RECORD \n";
+//                        Rloss = true;
+//                    } else {
+//                        output = output + System.currentTimeMillis() + "\tloss \n";
+//                    }
+//                    MainActivity.sendPacket(packetData);
 //                Log.v("packet delay", "request: " + System.currentTimeMillis());
-                    Log.v("LTDistributed", "send request global record");
-                    synchronized (MainActivity.waitingLock) {
-                        //                            while (MainActivity.isWaiting) {
-                        try {
-                            MainActivity.waitingLock.wait(sPacketTimeout);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        //                            }
-                    }
-                    Log.v("LTDistributed", "isRecordUpdate=" + declaration.isRecordUpdate[0]);
+//                    Log.v("LTDistributed", "send request global record");
+//                    synchronized (MainActivity.waitingLock) {
+//                                                    while (MainActivity.isWaiting) {
+//                        try {
+//                            MainActivity.waitingLock.wait(sPacketTimeout);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                                                    }
+//                    }
+//                    Log.v("LTDistributed", "isRecordUpdate=" + declaration.isRecordUpdate[0]);
 //            Log.v("LTDistributed", "position = " + (declaration.PData_requireSrc[node_ID][r][s]-1));
-                } while (!declaration.isRecordUpdate[0]);
-                declaration.isRecordUpdate[0] = false;
-                MainActivity.sRequestRecordLoss--;
+//                } while (!declaration.isRecordUpdate[0]);
+//                declaration.isRecordUpdate[0] = false;
+//                MainActivity.sRequestRecordLoss--;
+//
+//                try {
+//                    MainActivity.sFileTimeStampRecord.write(output.getBytes());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
-                try {
-                    MainActivity.sFileTimeStampRecord.write(output.getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            declaration.isNeedRequest = true; //  assume we don't get new source, so  need to request data from cache
-            Map<Integer, byte[]> valueMap = new HashMap<>();
-            for (int i = 0; i < declaration.globalDecodedSymbolsRecord.length; i++) {
-                System.out.print(declaration.globalDecodedSymbolsRecord[i]);
-                if (declaration.selfDecodedSymbolsRecord[0][i] == 0 && declaration.globalDecodedSymbolsRecord[i] != 0) {
-                    declaration.isNeedRequest = false;  // there are some new source, do not need to request from cache
-                    indices[currentIndex] = i;
-                    System.out.print("request "+i+"\n");
-                    valueMap.put(i, null);
-                    currentIndex++;
-                    System.out.print("currentIndex =  "+currentIndex+"\n");
-                }
-                if (currentIndex == maxRequestNumber || i == declaration.globalDecodedSymbolsRecord.length-1) {
-                    System.out.print("Send Request Packet \n");
-                    if (currentIndex == 0) {
-                        break;
-                    }
-                    if (i == declaration.globalDecodedSymbolsRecord.length) {
-                        indices = Arrays.copyOf(indices, currentIndex);
-                    }
-
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    try {
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-                        objectOutputStream.writeObject(valueMap);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-
-                    // packetData = new PacketData("REQUEST_GLOBAL_DECVAL", MainActivity.convertIntArrayToString(indices).getBytes());
-                    boolean Dloss = false;
-                    packetData = new PacketData("REQUEST_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
-
-                    packetData.setDes(MainActivity.mOwnerAddress);
-                    do {
-                        MainActivity.sRequestDecvalLoss++;
-                        MainActivity.sRequestDecvalTime = System.currentTimeMillis();
-                        MainActivity.sendPacket(packetData);
-                        Log.v("LTD", "map size = " + valueMap.size());
-                        if (Dloss == false) {
-                            output = System.currentTimeMillis() + "\tREQUEST_GLOBAL_DECVAL\n";
-                            Dloss = true;
-                        } else {
-                            output = output + System.currentTimeMillis() + "\tloss \n";
-                        }
-
-                        synchronized (MainActivity.waitingLock) {
-                            try {
-                                MainActivity.waitingLock.wait(sPacketTimeout);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    } while (!declaration.isDecvalUpdate[0]);
-                    declaration.isDecvalUpdate[0] = false;
-                    MainActivity.sRequestDecvalLoss--;
-
-
-                    try {
-                        MainActivity.sFileTimeStampRecord.write(output.getBytes());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-
-                    indices = new int[maxRequestNumber];
-                    valueMap = new HashMap<>();
-                    currentIndex = 0;
-                }
-            }
-
-        }
+//            declaration.isNeedRequest = true; //  assume we don't get new source, so  need to request data from cache
+//            Map<Integer, byte[]> valueMap = new HashMap<>();
+//            for (int i = 0; i < declaration.globalDecodedSymbolsRecord.length; i++) {
+//                System.out.print(declaration.globalDecodedSymbolsRecord[i]);
+//                if (declaration.selfDecodedSymbolsRecord[0][i] == 0 && declaration.globalDecodedSymbolsRecord[i] != 0) {
+//                    declaration.isNeedRequest = false;  // there are some new source, do not need to request from cache
+//                    indices[currentIndex] = i;
+//                    System.out.print("request "+i+"\n");
+//                    valueMap.put(i, null);
+//                    currentIndex++;
+//                    System.out.print("currentIndex =  "+currentIndex+"\n");
+//                }
+//                if (currentIndex == maxRequestNumber || i == declaration.globalDecodedSymbolsRecord.length-1) {
+//                    System.out.print("Send Request Packet \n");
+//                    if (currentIndex == 0) {
+//                        break;
+//                    }
+//                    if (i == declaration.globalDecodedSymbolsRecord.length) {
+//                        indices = Arrays.copyOf(indices, currentIndex);
+//                    }
+//
+//                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                    try {
+//                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+//                        objectOutputStream.writeObject(valueMap);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//
+//                    // packetData = new PacketData("REQUEST_GLOBAL_DECVAL", MainActivity.convertIntArrayToString(indices).getBytes());
+//                    boolean Dloss = false;
+//                    packetData = new PacketData("REQUEST_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
+//
+//                    packetData.setDes(MainActivity.mOwnerAddress);
+//                    do {
+//                        MainActivity.sRequestDecvalLoss++;
+//                        MainActivity.sRequestDecvalTime = System.currentTimeMillis();
+//                        MainActivity.sendPacket(packetData);
+//                        Log.v("LTD", "map size = " + valueMap.size());
+//                        if (Dloss == false) {
+//                            output = System.currentTimeMillis() + "\tREQUEST_GLOBAL_DECVAL\n";
+//                            Dloss = true;
+//                        } else {
+//                            output = output + System.currentTimeMillis() + "\tloss \n";
+//                        }
+//
+//                        synchronized (MainActivity.waitingLock) {
+//                            try {
+//                                MainActivity.waitingLock.wait(sPacketTimeout);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    } while (!declaration.isDecvalUpdate[0]);
+//                    declaration.isDecvalUpdate[0] = false;
+//                    MainActivity.sRequestDecvalLoss--;
+//
+//
+//                    try {
+//                        MainActivity.sFileTimeStampRecord.write(output.getBytes());
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//
+//                    indices = new int[maxRequestNumber];
+//                    valueMap = new HashMap<>();
+//                    currentIndex = 0;
+//                }
+//            }
+//
+//        }
 
         //Map<Integer, byte[]> UpdateMap = new HashMap<>();
 
@@ -421,7 +457,7 @@ public class LTDistributed_decoder {
                             Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[index-1]);*/
                             if(declaration.globalDecodedSymbolsRecord[index - 1] == 0) {
                                 declaration.UpdateMap.put(index-1, declaration.PData_codedData[node_ID][r]);
-                                if(declaration.UpdateMap.size() == maxRequestNumber){
+                                if(declaration.UpdateMap.size() >= maxRequestNumber){
                                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                                     try{
                                         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
@@ -434,33 +470,38 @@ public class LTDistributed_decoder {
                                     packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
                                     packetData.setPosition(0);
                                     packetData.setDes(MainActivity.mOwnerAddress);
-                                    do {
-                                        MainActivity.sUpdateDecvalLoss++;
-                                        MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
-                                        MainActivity.sendPacket(packetData);
-                                        if(Uloss == false){
-                                            output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+ "\n";
-                                            Uloss = true;
-                                        }
-                                        else{
-                                            output=output+System.currentTimeMillis()+"\tloss \n";
-                                        }
-                                        synchronized (MainActivity.waitingLock) {
-                                            try {
-                                                MainActivity.waitingLock.wait(sPacketTimeout);
-                                            } catch (InterruptedException e1) {
-                                                e1.printStackTrace();
-                                            }
-                                        }
-                                    } while (!declaration.isGlobalDecvalUpdate[0]);
-                                    declaration.isGlobalDecvalUpdate[0] = false;
-                                    MainActivity.sUpdateDecvalLoss--;
+//                                    do {
+//                                        MainActivity.sUpdateDecvalLoss++;
+//                                        MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
 
-                                    try {
-                                        MainActivity.sFileTimeStampRecord.write(output.getBytes());
-                                    } catch (IOException ex) {
-                                        ex.printStackTrace();
+                                    for (Integer key : declaration.UpdateMap.keySet()) {
+                                        Log.v("LTD", "send key2: " + key);
+                                        MainActivity.setLogText("send key2: " + key);
                                     }
+                                        MainActivity.sendPacket(packetData);
+//                                        if(Uloss == false){
+//                                            output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+ "\n";
+//                                            Uloss = true;
+//                                        }
+//                                        else{
+//                                            output=output+System.currentTimeMillis()+"\tloss \n";
+//                                        }
+//                                        synchronized (MainActivity.waitingLock) {
+//                                            try {
+//                                                MainActivity.waitingLock.wait(sPacketTimeout);
+//                                            } catch (InterruptedException e1) {
+//                                                e1.printStackTrace();
+//                                            }
+//                                        }
+//                                    } while (!declaration.isGlobalDecvalUpdate[0]);
+//                                    declaration.isGlobalDecvalUpdate[0] = false;
+//                                    MainActivity.sUpdateDecvalLoss--;
+//
+//                                    try {
+//                                        MainActivity.sFileTimeStampRecord.write(output.getBytes());
+//                                    } catch (IOException ex) {
+//                                        ex.printStackTrace();
+//                                    }
 
                                     declaration.UpdateMap = new HashMap<>();
                                 }
@@ -517,36 +558,41 @@ public class LTDistributed_decoder {
             packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
             packetData.setPosition(0);
             packetData.setDes(MainActivity.mOwnerAddress);
-            do {
-                MainActivity.sUpdateDecvalLoss++;
-                MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
-                MainActivity.sendPacket(packetData);
 
-                if(Uloss == false){
-                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+"\n";
-                    Uloss = true;
-                }
-                else{
-                    output=output+System.currentTimeMillis()+"\tloss \n";
-                }
-
-                synchronized (MainActivity.waitingLock) {
-                    try {
-                        MainActivity.waitingLock.wait(sPacketTimeout);
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            } while (!declaration.isGlobalDecvalUpdate[0]);
-            declaration.isGlobalDecvalUpdate[0] = false;
-            MainActivity.sUpdateDecvalLoss--;
-
-
-            try {
-                MainActivity.sFileTimeStampRecord.write(output.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
+            for (Integer key : declaration.UpdateMap.keySet()) {
+                Log.v("LTD", "send key3: " + key);
+                MainActivity.setLogText("send key3: " + key);
             }
+//            do {
+//                MainActivity.sUpdateDecvalLoss++;
+//                MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
+                MainActivity.sendPacket(packetData);
+//
+//                if(Uloss == false){
+//                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+"\n";
+//                    Uloss = true;
+//                }
+//                else{
+//                    output=output+System.currentTimeMillis()+"\tloss \n";
+//                }
+//
+//                synchronized (MainActivity.waitingLock) {
+//                    try {
+//                        MainActivity.waitingLock.wait(sPacketTimeout);
+//                    } catch (InterruptedException e1) {
+//                        e1.printStackTrace();
+//                    }
+//                }
+//            } while (!declaration.isGlobalDecvalUpdate[0]);
+//            declaration.isGlobalDecvalUpdate[0] = false;
+//            MainActivity.sUpdateDecvalLoss--;
+//
+//
+//            try {
+//                MainActivity.sFileTimeStampRecord.write(output.getBytes());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
 
             declaration.UpdateMap = new HashMap<>();
         }

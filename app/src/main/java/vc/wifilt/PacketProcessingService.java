@@ -172,9 +172,9 @@ public class PacketProcessingService extends Thread {
                     Log.v(TAG, "send answer global decval: " + packetData.getPosition());
                     break;
                 case "UPDATE_GLOBAL_DECVAL":
-                    if (!MainActivity.sIsGroupOwner) {
-                        return;
-                    }
+//                    if (!MainActivity.sIsGroupOwner) {
+//                        return;
+//                    }
 
                     Map<Integer, byte[]> UpdateMap = new HashMap<>();
                     byteArrayInputStream = new ByteArrayInputStream(packetData.getData());
@@ -183,6 +183,7 @@ public class PacketProcessingService extends Thread {
                         UpdateMap = (Map<Integer, byte[]>) objectInputStream.readObject();
                         for (Integer key : UpdateMap.keySet()) {
                             Log.v("update map", "receive key: " + key);
+                            MainActivity.setLogText("receive key: " + key);
                             synchronized (declaration.decVal) {
                                 System.arraycopy(UpdateMap.get(key),
                                         0,
@@ -193,6 +194,7 @@ public class PacketProcessingService extends Thread {
 //                            synchronized (declaration.globalDecodedSymbolsRecord) {
 //                                declaration.globalDecodedSymbolsRecord[key] = 1;
                             declaration.globalDecodedSymbolsRecord[key] = 1;
+                            declaration.selfDecodedSymbolsRecord[0][key] = 1;
 //                            }
                         }
                     } catch (IOException e) {
@@ -208,10 +210,10 @@ public class PacketProcessingService extends Thread {
                         e.printStackTrace();
                     }
 
-                    returnData = new PacketData("SUCESS_UPDATE_DECVAL",  MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());//String.valueOf(1).getBytes());
-                    returnData.setPosition(packetData.getPosition());
-                    returnData.setDes(packetData.getOri());
-                    MainActivity.sendPacket(returnData);
+//                    returnData = new PacketData("SUCESS_UPDATE_DECVAL",  MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());//String.valueOf(1).getBytes());
+//                    returnData.setPosition(packetData.getPosition());
+//                    returnData.setDes(packetData.getOri());
+//                    MainActivity.sendPacket(returnData);
                     break;
 //                case "UPDATE_GLOBAL_RECORD":
 //                    if (!MainActivity.sIsGroupOwner) {

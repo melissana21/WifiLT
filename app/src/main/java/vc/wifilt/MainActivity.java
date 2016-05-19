@@ -795,7 +795,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         runOnUI(new Runnable() {
             @Override
             public void run() {
-                LogFragment.sLogText.setText(string);
+                LogFragment.sLogText.setText(LogFragment.sLogText.getText() + "\n" + string);
             }
         });
     }

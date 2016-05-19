@@ -100,7 +100,7 @@ class ServerThread extends Thread {
                     MainActivity.setLogText("Owner: " + MainActivity.mOwnerAddress + "\nFile Name: " + MainActivity.sFileName);
                     continue;
                 }
-                if (!packetData.getDes().equals(MainActivity.mMacAddress)) {
+                if (packetData.getOri().equals(MainActivity.mMacAddress)) {
                     continue;
                 }
 
