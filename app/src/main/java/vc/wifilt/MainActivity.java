@@ -93,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
     protected static ExecutorService sPacketProcessingThread;
 
     protected static FileOutputStream sFileTimeStampRecord;
+    protected static FileOutputStream sFileRequestNumber;
+    protected static FileOutputStream sFileUpdateNumber;
+
     protected static FileOutputStream sFileOutputStream;
     protected static FileOutputStream sRequestRecordDelayStream;
     protected static FileOutputStream sRequestDecvalDelayStream;
@@ -265,6 +268,8 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
         try {
             sFileTimeStampRecord.close();
             sFileOutputStream.close();
+            sFileRequestNumber.close();
+            sFileUpdateNumber.close();
             sRequestRecordDelayStream.close();
             sRequestDecvalDelayStream.close();
             sUpdateDecvalDelayStream.close();
@@ -385,10 +390,13 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                 }
                 try {
                     sFileTimeStampRecord = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath()+ "/TimeStampRecord.txt");
-                    sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
-                    sRequestRecordDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_record.txt");
-                    sRequestDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_decval.txt");
-                    sUpdateDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/update_decval.txt");
+//                    sFileOutputStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/degree.txt");
+
+                    sFileRequestNumber = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_number.txt");
+                    sFileUpdateNumber = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/update_number.txt");
+                    sRequestRecordDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_record_time.txt");
+                    sRequestDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/request_decval_time.txt");
+                    sUpdateDecvalDelayStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/update_decval_time.txt");
                     sResultStream = new FileOutputStream(getExternalFilesDir(null).getAbsolutePath() + "/" + sFileName + ".txt");
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();

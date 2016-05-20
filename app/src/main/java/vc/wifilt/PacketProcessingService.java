@@ -228,13 +228,16 @@ public class PacketProcessingService extends Thread {
                     if (!packetData.getDes().equals(MainActivity.mMacAddress) || declaration.isRecordUpdate[packetData.getPosition()]) {
                         return;
                     }
-//                    output = (System.currentTimeMillis() - MainActivity.sRequestRecordTime) + "\n";
-                    output = System.currentTimeMillis()+"\t"+type+"\n";
-
+                    output = (System.currentTimeMillis() - MainActivity.sRequestRecordTime) + "\n";
                     MainActivity.sRequestRecordTotalTime = MainActivity.sRequestRecordTotalTime + (System.currentTimeMillis() - MainActivity.sRequestRecordTime);
                     MainActivity.num_RequestRecord = MainActivity.num_RequestRecord + 1;
                     try {
-                        //MainActivity.sRequestRecordDelayStream.write(output.getBytes());
+                        MainActivity.sRequestRecordDelayStream.write(output.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    output = System.currentTimeMillis()+"\t"+type+"\n";
+                    try {
                         MainActivity.sFileTimeStampRecord.write(output.getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -295,7 +298,7 @@ public class PacketProcessingService extends Thread {
                         return;
                     }
 
-                    //output = (System.currentTimeMillis() - MainActivity.sRequestDecvalTime) + "\n";
+
 
 
                     MainActivity.sRequestDecvalTotalTime = MainActivity.sRequestDecvalTotalTime + (System.currentTimeMillis() - MainActivity.sRequestDecvalTime);
@@ -338,9 +341,15 @@ public class PacketProcessingService extends Thread {
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
+                    output = (System.currentTimeMillis() - MainActivity.sRequestDecvalTime) + "\n";
+
+                    try {
+                        MainActivity.sRequestDecvalDelayStream.write(output.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     output = System.currentTimeMillis()+"\t"+type + ": Map Size = "+answerMap.size()+"\n";
                     try {
-                        //MainActivity.sRequestDecvalDelayStream.write(output.getBytes());
                         MainActivity.sFileTimeStampRecord.write(output.getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -367,23 +376,29 @@ public class PacketProcessingService extends Thread {
                             || declaration.isGlobalDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]) {
                         return;
                     }
-                    // output = (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime) + "\n";
+
                     int[] Newdata = MainActivity.convertStringToIntArray(new String(packetData.getData()));
                     synchronized (declaration.globalDecodedSymbolsRecord) {
                         declaration.globalDecodedSymbolsRecord = Newdata;
                     }
-                    output = System.currentTimeMillis()+"\t"+type+"\n";
-
+                    output = (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime) + "\n";
                     MainActivity.sUpdateDecvalTotalTime = MainActivity.sUpdateDecvalTotalTime + (System.currentTimeMillis() - MainActivity.sUpdateDecvalTime);
                     MainActivity.num_UpdateDecval = MainActivity.num_UpdateDecval + 1;
 
 
                     try {
-                        // MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
+                        MainActivity.sUpdateDecvalDelayStream.write(output.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    output = System.currentTimeMillis()+"\t"+type+"\n";
+                    try {
                         MainActivity.sFileTimeStampRecord.write(output.getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
                     declaration.isGlobalDecvalUpdate[0] = true;
                     synchronized (MainActivity.waitingLock) {
 //                        MainActivity.isWaiting = false;

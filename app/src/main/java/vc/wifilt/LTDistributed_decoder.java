@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.SynchronousQueue;
 
 /**
  * Created by melissa on 2016/1/4.
@@ -31,6 +32,7 @@ public class LTDistributed_decoder {
         PacketData packetData;
         // int sPacketTimeout = 1000;
         String output = "";
+        String output2 = "";
         if(declaration.UpdateMap.size() > 0){
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             try{
@@ -49,11 +51,12 @@ public class LTDistributed_decoder {
                 MainActivity.sendPacket(packetData);
 
                 if(Uloss == false){
-                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+"\n";
+                    output = (System.currentTimeMillis()-MainActivity.sTotalTime)+"\tUPDATE1\t "+ declaration.UpdateMap.size()+"\n";
+                    output2 = System.currentTimeMillis()+"\tUPDATE1\t "+ declaration.UpdateMap.size()+"\n";
                     Uloss = true;
                 }
                 else{
-                    output=output+System.currentTimeMillis()+"\tloss \n";
+                    output2=output2+System.currentTimeMillis()+"\tloss \n";
                 }
 
                 synchronized (MainActivity.waitingLock) {
@@ -69,7 +72,12 @@ public class LTDistributed_decoder {
 
 
             try {
-                MainActivity.sFileTimeStampRecord.write(output.getBytes());
+                MainActivity.sFileUpdateNumber.write(output.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                MainActivity.sFileTimeStampRecord.write(output2.getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -87,6 +95,16 @@ public class LTDistributed_decoder {
     }
 
     public static void Distributed_BP (int symbolNum, int dTime, int rStep, int layer, int node_ID )	{
+        String output = "";// = "global request record count = " + declaration.requestcount + "\n";
+        String output2 = "";
+        output="Start Distributed_BP \n";
+        try {
+            MainActivity.sFileTimeStampRecord.write(output.getBytes());
+            MainActivity.sFileUpdateNumber.write(output.getBytes());
+            MainActivity.sFileRequestNumber.write(output.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         PacketData packetData;
         //printf("in Distributed_BP\n");
@@ -94,7 +112,7 @@ public class LTDistributed_decoder {
 
         /*0127 UPDATE*/
 //        declaration.requestcount ++;
-        String output = "";// = "global request record count = " + declaration.requestcount + "\n";
+
 //        System.out.print(output);
 //        try {
 //            MainActivity.sFileOutputStream.write(output.getBytes());
@@ -183,16 +201,18 @@ public class LTDistributed_decoder {
                     packetData = new PacketData("REQUEST_GLOBAL_DECVAL", byteArrayOutputStream.toByteArray());
 
                     packetData.setDes(MainActivity.mOwnerAddress);
+                    declaration.RippleSize[0]= declaration.RippleSize[0]+valueMap.size();
                     do {
                         MainActivity.sRequestDecvalLoss++;
                         MainActivity.sRequestDecvalTime = System.currentTimeMillis();
                         MainActivity.sendPacket(packetData);
                         Log.v("LTD", "map size = " + valueMap.size());
                         if (Dloss == false) {
-                            output = System.currentTimeMillis() + "\tREQUEST_GLOBAL_DECVAL\n";
+                            output = (System.currentTimeMillis()-MainActivity.sTotalTime) + "\tREQUEST\t"+valueMap.size()+"\n";
+                            output2 = System.currentTimeMillis() + "\tREQUEST\t"+valueMap.size()+"\n";
                             Dloss = true;
                         } else {
-                            output = output + System.currentTimeMillis() + "\tloss \n";
+                            output2 = output2 + System.currentTimeMillis() + "\tloss \n";
                         }
 
                         synchronized (MainActivity.waitingLock) {
@@ -208,7 +228,12 @@ public class LTDistributed_decoder {
 
 
                     try {
-                        MainActivity.sFileTimeStampRecord.write(output.getBytes());
+                        MainActivity.sFileRequestNumber.write(output.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        MainActivity.sFileTimeStampRecord.write(output2.getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -245,7 +270,7 @@ public class LTDistributed_decoder {
                 for(int s = 0 ; s < declaration.PData_originalDegree[node_ID][r]; s++){
                     int index = declaration.PData_requireSrc[node_ID][r][s];
                     if(index != -1)
-                        if(declaration.globalDecodedSymbolsRecord[index-1] != 0 ||declaration.selfDecodedSymbolsRecord[node_ID][index-1] != 0)
+                        if(/*declaration.globalDecodedSymbolsRecord[index-1] != 0 ||*/declaration.selfDecodedSymbolsRecord[node_ID][index-1] != 0)
                             decodenumber++;
                 }
 
@@ -421,7 +446,7 @@ public class LTDistributed_decoder {
                             Log.v("LTDistributed", "Request Record value = " + declaration.globalDecodedSymbolsRecord[index-1]);*/
                             if(declaration.globalDecodedSymbolsRecord[index - 1] == 0) {
                                 declaration.UpdateMap.put(index-1, declaration.PData_codedData[node_ID][r]);
-                                if(declaration.UpdateMap.size() == maxRequestNumber){
+                                if(declaration.UpdateMap.size() >= maxRequestNumber){
                                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                                     try{
                                         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
@@ -439,11 +464,12 @@ public class LTDistributed_decoder {
                                         MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
                                         MainActivity.sendPacket(packetData);
                                         if(Uloss == false){
-                                            output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+ "\n";
+                                            output = (System.currentTimeMillis()-MainActivity.sTotalTime)+"\tUPDATE2\t "+ declaration.UpdateMap.size()+ "\n";
+                                            output2 = System.currentTimeMillis()+"\tUPDATE2\t "+ declaration.UpdateMap.size()+"\n";
                                             Uloss = true;
                                         }
                                         else{
-                                            output=output+System.currentTimeMillis()+"\tloss \n";
+                                            output2=output2+System.currentTimeMillis()+"\tloss \n";
                                         }
                                         synchronized (MainActivity.waitingLock) {
                                             try {
@@ -456,6 +482,11 @@ public class LTDistributed_decoder {
                                     declaration.isGlobalDecvalUpdate[0] = false;
                                     MainActivity.sUpdateDecvalLoss--;
 
+                                    try {
+                                        MainActivity.sFileUpdateNumber.write(output.getBytes());
+                                    } catch (IOException ex) {
+                                        ex.printStackTrace();
+                                    }
                                     try {
                                         MainActivity.sFileTimeStampRecord.write(output.getBytes());
                                     } catch (IOException ex) {
@@ -523,11 +554,12 @@ public class LTDistributed_decoder {
                 MainActivity.sendPacket(packetData);
 
                 if(Uloss == false){
-                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+"\n";
+                    output = (System.currentTimeMillis()-MainActivity.sTotalTime)+"\tUPDATE3\t "+ declaration.UpdateMap.size()+"\n";
+                    output2 = System.currentTimeMillis()+"\tUPDATE3\t "+ declaration.UpdateMap.size()+"\n";
                     Uloss = true;
                 }
                 else{
-                    output=output+System.currentTimeMillis()+"\tloss \n";
+                    output2=output2+System.currentTimeMillis()+"\tloss \n";
                 }
 
                 synchronized (MainActivity.waitingLock) {
@@ -543,9 +575,14 @@ public class LTDistributed_decoder {
 
 
             try {
-                MainActivity.sFileTimeStampRecord.write(output.getBytes());
+                MainActivity.sFileUpdateNumber.write(output.getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+            try {
+                MainActivity.sFileTimeStampRecord.write(output.getBytes());
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
 
             declaration.UpdateMap = new HashMap<>();

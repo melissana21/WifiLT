@@ -114,7 +114,16 @@ public class AfterP2P {
                     + "\nRequest Record Loss = " + MainActivity.sRequestRecordLoss
                     + "\nRequest Decval Loss = " + MainActivity.sRequestDecvalLoss
                     + "\nUpdate Decval Loss = " + MainActivity.sUpdateDecvalLoss
-                    + "\n";
+                    + "\n" + MainActivity.sRequestRecordTotalTime
+                    + "\t " + MainActivity.sRequestDecvalTotalTime
+                    + "\t " + MainActivity.sUpdateDecvalTotalTime
+                    + "\t " + MainActivity.num_RequestRecord
+                    + "\t " + MainActivity.sRequestRecordLoss
+                    + "\t" + MainActivity.num_RequestDecval
+                    + "\t " + MainActivity.sRequestDecvalLoss
+                    + "\t" + MainActivity.num_UpdateDecval
+                    + "\t " + MainActivity.sUpdateDecvalLoss
+                    +"\n";
             try {
                 MainActivity.sResultStream.write(result.getBytes());
                 MainActivity.sResultStream.close();
