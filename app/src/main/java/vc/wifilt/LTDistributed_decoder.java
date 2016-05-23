@@ -51,7 +51,8 @@ public class LTDistributed_decoder {
 //            do {
 //                MainActivity.sUpdateDecvalLoss++;
 //                MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
-                MainActivity.sendPacket(packetData);
+            declaration.waiting_time = System.currentTimeMillis();
+            MainActivity.sendPacket(packetData);
 
 //                if(Uloss == false){
 //                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+"\n";
@@ -478,7 +479,8 @@ public class LTDistributed_decoder {
                                         Log.v("LTD", "send key2: " + key);
                                         MainActivity.setLogText("send key2: " + key);
                                     }
-                                        MainActivity.sendPacket(packetData);
+                                    MainActivity.sendPacket(packetData);
+                                    declaration.waiting_time = System.currentTimeMillis();
 //                                        if(Uloss == false){
 //                                            output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+ "\n";
 //                                            Uloss = true;
@@ -566,7 +568,9 @@ public class LTDistributed_decoder {
 //            do {
 //                MainActivity.sUpdateDecvalLoss++;
 //                MainActivity.sUpdateDecvalTime = System.currentTimeMillis();
-                MainActivity.sendPacket(packetData);
+
+            declaration.waiting_time = System.currentTimeMillis();
+            MainActivity.sendPacket(packetData);
 //
 //                if(Uloss == false){
 //                    output = System.currentTimeMillis()+"\tUPDATE_GLOBAL_DECVAL : Map Size = "+ declaration.UpdateMap.size()+"\n";

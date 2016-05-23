@@ -176,11 +176,13 @@ public class PacketProcessingService extends Thread {
 //                        return;
 //                    }
 
+                    declaration.waiting_time = System.currentTimeMillis();
                     Map<Integer, byte[]> UpdateMap = new HashMap<>();
                     byteArrayInputStream = new ByteArrayInputStream(packetData.getData());
                     try {
                         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
                         UpdateMap = (Map<Integer, byte[]>) objectInputStream.readObject();
+                        Log.v("update map", "map size: " + UpdateMap.size());
                         for (Integer key : UpdateMap.keySet()) {
                             Log.v("update map", "receive key: " + key);
                             MainActivity.setLogText("receive key: " + key);
@@ -227,7 +229,8 @@ public class PacketProcessingService extends Thread {
 //                    Log.v(TAG, "receive answer");
 //                    Log.v(TAG, "des: " + packetData.getDes());
 //                    Log.v(TAG, "my mac: " + MainActivity.mMacAddress);
-                    if (!packetData.getDes().equals(MainActivity.mMacAddress) || declaration.isRecordUpdate[packetData.getPosition()]) {
+//                    if (!packetData.getDes().equals(MainActivity.mMacAddress) || declaration.isRecordUpdate[packetData.getPosition()]) {
+                    if(MainActivity.sIsGroupOwner){
                         return;
                     }
 //                    output = (System.currentTimeMillis() - MainActivity.sRequestRecordTime) + "\n";
@@ -279,21 +282,100 @@ public class PacketProcessingService extends Thread {
                     synchronized (declaration.globalDecodedSymbolsRecord) {
                         declaration.globalDecodedSymbolsRecord = data;
                     }
+
+
+                    Map<Integer, byte[]> UMap = new HashMap<>();
+                    Map<Integer, byte[]> RMap = new HashMap<>();
+                    int maxRequestNumber = 1;
+                    int UIndex = 0;
+                    int RIndex = 0;
+                    for (int i = 0; i < declaration.globalDecodedSymbolsRecord.length; i++) {
+                        if (declaration.selfDecodedSymbolsRecord[0][i] != 0 && declaration.globalDecodedSymbolsRecord[i] == 0) {
+                            System.out.print("update again: " + i + "\n");
+                            UMap.put(i, Arrays.copyOfRange(declaration.decVal,
+                                    declaration.messageSize[declaration.currentLayer] * i,
+                                    declaration.messageSize[declaration.currentLayer] * (i + 1)));
+                            UIndex++;
+                        }
+                        else if(declaration.selfDecodedSymbolsRecord[0][i] == 0 && declaration.globalDecodedSymbolsRecord[i] != 0){
+                            System.out.print("request data: " + i + "\n");
+                            RMap.put(i, null);
+                            RIndex++;
+                        }
+                        if (UIndex == maxRequestNumber || i == declaration.globalDecodedSymbolsRecord.length - 1) {
+                            if (UIndex > 0) {
+                                System.out.print("Send Update Packet \n");
+
+                                ByteArrayOutputStream byteArrayOutputStreamU = new ByteArrayOutputStream();
+                                try {
+                                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStreamU);
+                                    objectOutputStream.writeObject(UMap);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+                                packetData = new PacketData("UPDATE_GLOBAL_DECVAL", byteArrayOutputStreamU.toByteArray());
+                                packetData.setPosition(0);
+                                packetData.setDes(MainActivity.mOwnerAddress);
+
+                                for (Integer key : UMap.keySet()) {
+                                    Log.v("LTD", "send key again: " + key);
+                                    MainActivity.setLogText("send key again: " + key);
+                                }
+                                MainActivity.sendPacket(packetData);
+                                declaration.waiting_time = System.currentTimeMillis();
+                                UMap = new HashMap<>();
+                                UIndex = 0;
+                            }
+                        }
+
+                        if (RIndex == maxRequestNumber || i == declaration.globalDecodedSymbolsRecord.length - 1) {
+                            if (RIndex > 0) {
+
+
+                                System.out.print("Send Request Packet \n");
+                                ByteArrayOutputStream byteArrayOutputStreamR = new ByteArrayOutputStream();
+                                try {
+                                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStreamR);
+                                    objectOutputStream.writeObject(RMap);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+                                packetData = new PacketData("REQUEST_GLOBAL_DECVAL", byteArrayOutputStreamR.toByteArray());
+                                packetData.setPosition(0);
+                                packetData.setDes(MainActivity.mOwnerAddress);
+
+                                for (Integer key : RMap.keySet()) {
+                                    Log.v("LTD", "Request key: " + key);
+                                    MainActivity.setLogText("Request key: " + key);
+                                }
+                                MainActivity.sendPacket(packetData);
+                                declaration.waiting_time = System.currentTimeMillis();
+                                RMap = new HashMap<>();
+                                RIndex = 0;
+                            }
+                        }
+
+
+                    }
+
+
+
+
 //                    declaration.globalDecodedSymbolsRecord[packetData.getPosition()] = data;
 //                    Log.v(TAG, "position = " + packetData.getPosition());
 //                    Log.v(TAG, "before: " +declaration.isRecordUpdate[packetData.getPosition()]);
-                    declaration.isRecordUpdate[packetData.getPosition()] = true;
+//                    declaration.isRecordUpdate[packetData.getPosition()] = true;
 //                    Log.v(TAG, "after: " +declaration.isRecordUpdate[packetData.getPosition()]);
 
-                    synchronized (MainActivity.waitingLock) {
-                        Log.v(TAG, "unlock waiting");
-//                        MainActivity.isWaiting = false;
-                        MainActivity.waitingLock.notify();
-                    }
+//                    synchronized (MainActivity.waitingLock) {
+//                        Log.v(TAG, "unlock waiting");
+////                        MainActivity.isWaiting = false;
+//                        MainActivity.waitingLock.notify();
+//                    }
                     break;
                 case "ANSWER_GLOBAL_DECVAL":
                     if (!packetData.getDes().equals(MainActivity.mMacAddress)
-                            || declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]) {
+                           /* || declaration.isDecvalUpdate[(packetData.getPosition() / declaration.messageSize[declaration.currentLayer])]*/) {
                         return;
                     }
 
@@ -357,12 +439,12 @@ public class PacketProcessingService extends Thread {
 //                                declaration.messageSize[declaration.currentLayer]);
 //                        declaration.selfDecodedSymbolsRecord[0][LTDistributed_decoder.indices[i]] = 1;
 //                    }
-                    declaration.isDecvalUpdate[0] = true;
-
-                    synchronized (MainActivity.waitingLock) {
-//                        MainActivity.isWaiting = false;
-                        MainActivity.waitingLock.notify();
-                    }
+//                    declaration.isDecvalUpdate[0] = true;
+//
+//                    synchronized (MainActivity.waitingLock) {
+////                        MainActivity.isWaiting = false;
+//                        MainActivity.waitingLock.notify();
+//                    }
                     break;
                 case "SUCESS_UPDATE_DECVAL":
                     if (!packetData.getDes().equals(MainActivity.mMacAddress)

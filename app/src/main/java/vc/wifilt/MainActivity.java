@@ -400,6 +400,7 @@ public class MainActivity extends AppCompatActivity implements DeviceFragment.On
                     }
                 });
                 setLogText("START!");
+                declaration.waiting_time = System.currentTimeMillis();
                 FinishLayer finishLayer = new FinishLayer();
                 MainActivity.executorService.submit(finishLayer);
                 Toast.makeText(MainActivity.this, "START", Toast.LENGTH_SHORT).show();

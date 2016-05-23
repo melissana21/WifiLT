@@ -17,6 +17,18 @@ public class FinishLayer extends Thread{
                 MainActivity.sCacheSpendTime = System.currentTimeMillis()-MainActivity.sCacheSpendTime;
                 break;
             }
+//            declaration.waiting_time = System.currentTimeMillis() - declaration.waiting_time;
+            if(MainActivity.sIsGroupOwner && (System.currentTimeMillis()-declaration.waiting_time) > 3000){
+                System.out.println(declaration.waiting_time);
+                declaration.waiting_time = System.currentTimeMillis();
+                PacketData Data;
+                Data =
+                        new PacketData("ANSWER_GLOBAL_RECORD",
+                                MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());//
+                Data.setPosition(0);
+                Data.setDes(MainActivity.mOwnerAddress);
+                MainActivity.sendPacket(Data);
+            }
             finish = 1;
             unfinishcount = 0;
 
@@ -45,6 +57,7 @@ public class FinishLayer extends Thread{
                 System.out.print("finishcount");
                 System.out.println(declaration.finishcount);
                 MainActivity.setLogText("Finish Count: " + declaration.finishcount);
+                declaration.waiting_time=System.currentTimeMillis();
             }
         }
     }

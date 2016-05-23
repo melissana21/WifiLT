@@ -11,6 +11,7 @@ import java.io.IOException;
 public class AfterP2P {
     protected static void main(int node_ID){
         MainActivity.sTotalTime = System.currentTimeMillis();
+
         System.out.println("Start !!");
         // for(int node_ID=0; node_ID<declaration.nodeNum; node_ID++){
         //     int flag_first = 1;
@@ -71,6 +72,7 @@ public class AfterP2P {
 
 
         Log.v("AfterP2P", "start thread");
+        declaration.waiting_time = System.currentTimeMillis();
         while (true) {
 
 

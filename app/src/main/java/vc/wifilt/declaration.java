@@ -15,6 +15,7 @@ public class declaration {
     static int[] EncPacketNum;
     static int SVC_LayerNum;
     static int currentLayer = 0;
+    static long waiting_time =0;
 
     static Boolean isNeedRequest = false;
     static Boolean selfdecoding = false;
