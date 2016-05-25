@@ -13,6 +13,14 @@ public class FinishLayer extends Thread{
         int MinUnfinishcount = 9999999;
         while(true){
             if(finish == 1){
+                PacketData Data;
+                Data =
+                        new PacketData("ANSWER_GLOBAL_RECORD",
+                                MainActivity.convertIntArrayToString(declaration.globalDecodedSymbolsRecord).getBytes());//
+                Data.setPosition(0);
+                Data.setDes(MainActivity.mOwnerAddress);
+                MainActivity.sendPacket(Data);
+
                 declaration.globalFinish = 1;
                 MainActivity.sCacheSpendTime = System.currentTimeMillis()-MainActivity.sCacheSpendTime;
                 break;

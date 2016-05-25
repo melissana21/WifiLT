@@ -46,7 +46,7 @@ public class LTDistributed_decoder {
 
             for (Integer key : declaration.UpdateMap.keySet()) {
                 Log.v("LTD", "send key1: " + key);
-                MainActivity.setLogText("send key1: " + key);
+//                MainActivity.setLogText("send key1: " + key);
             }
 //            do {
 //                MainActivity.sUpdateDecvalLoss++;
@@ -477,7 +477,7 @@ public class LTDistributed_decoder {
 
                                     for (Integer key : declaration.UpdateMap.keySet()) {
                                         Log.v("LTD", "send key2: " + key);
-                                        MainActivity.setLogText("send key2: " + key);
+//                                        MainActivity.setLogText("send key2: " + key);
                                     }
                                     MainActivity.sendPacket(packetData);
                                     declaration.waiting_time = System.currentTimeMillis();
@@ -563,7 +563,7 @@ public class LTDistributed_decoder {
 
             for (Integer key : declaration.UpdateMap.keySet()) {
                 Log.v("LTD", "send key3: " + key);
-                MainActivity.setLogText("send key3: " + key);
+//                MainActivity.setLogText("send key3: " + key);
             }
 //            do {
 //                MainActivity.sUpdateDecvalLoss++;
